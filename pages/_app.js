@@ -2,11 +2,13 @@ import '@/styles/globals.css';
 import Head from 'next/head';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { UserProvider, useUser } from '@/contexts/UserContext';
 
-export default function App({ Component, pageProps }) {
+function AppLayout({ Component, pageProps }) {
   const [darkMode, setDarkMode] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef(null);
+  const user = useUser();
 
   useEffect(() => {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -41,14 +43,15 @@ export default function App({ Component, pageProps }) {
         <link rel="icon" href="/포키.png" />
       </Head>
 
-      {/* ✅ 전체 페이지 구조 */}
       <div
         className="min-h-screen flex flex-col"
-        style={{ background: 'var(--background)', color: 'var(--foreground)' }}
+        style={{
+          background: darkMode ? '#121212' : '#ffffff',
+          color: darkMode ? '#ffffff' : '#000000',
+        }}
       >
         {/* ✅ 헤더 */}
         <header className="w-full px-6 py-4 flex justify-between items-center bg-white dark:bg-black relative">
-          {/* 왼쪽: 로고 */}
           <Link href="/" className="flex items-center space-x-2">
             <img src="/포키.png" alt="로고" className="w-8 h-8" />
             <span className="font-bold text-lg text-black dark:text-white tracking-tight">
@@ -56,20 +59,25 @@ export default function App({ Component, pageProps }) {
             </span>
           </Link>
 
-          {/* 오른쪽: 메뉴 */}
           <nav className="flex items-center space-x-6 relative">
-            <a href="#" className="text-sm text-black dark:text-white hover:underline">Page</a>
-            <a href="#" className="text-sm text-black dark:text-white hover:underline">Page</a>
-            <a href="#" className="text-sm text-black dark:text-white hover:underline">Page</a>
-            <Link
-              href="/upload"
-              className="bg-black text-white text-sm px-4 py-2 rounded hover:bg-gray-800 transition"
-            >
+            <Link href="/about" className="text-sm text-black dark:text-white hover:underline">
+              About
+            </Link>
+            <Link href="/contact" className="text-sm text-black dark:text-white hover:underline">
+              Contact
+            </Link>
+            <Link href="/upload" className="bg-black text-white text-sm px-4 py-2 rounded hover:bg-gray-800 transition">
               Upload Recipe here
             </Link>
 
-            {/* ⚙ 설정 버튼 + 드롭다운 */}
-            <div className="relative" ref={settingsRef}>
+            {user && (
+              <div className="text-sm text-black dark:text-white">
+                {user.displayName || user.email}님
+              </div>
+            )}
+
+            {/* ✅ 설정 버튼 */}
+            <div className="relative inline-block text-left" ref={settingsRef}>
               <button
                 onClick={() => setSettingsOpen(prev => !prev)}
                 className="bg-gray-200 dark:bg-gray-700 px-3 py-2 rounded text-sm text-black dark:text-white"
@@ -78,7 +86,7 @@ export default function App({ Component, pageProps }) {
               </button>
 
               {settingsOpen && (
-                <div className="absolute right-0 mt-2 bg-white dark:bg-black rounded shadow p-4 z-50">
+                <div className="absolute right-0 mt-2 bg-white dark:bg-black rounded shadow p-4 z-50 w-max min-w-[160px] overflow-hidden">
                   <div className="flex items-center space-x-2">
                     <span className="text-sm text-gray-700 dark:text-gray-300">배경 모드</span>
                     <button
@@ -91,13 +99,7 @@ export default function App({ Component, pageProps }) {
                         className={`w-4 h-4 rounded-full shadow-md transform transition duration-300 ease-in-out ${
                           darkMode ? 'translate-x-6 bg-white' : 'translate-x-0 bg-black'
                         }`}
-                      >
-                        {darkMode ? (
-                          <span className="text-[10px] text-gray-800 block text-center">🌙</span>
-                        ) : (
-                          <span className="text-[10px] text-white block text-center">☀️</span>
-                        )}
-                      </div>
+                      />
                     </button>
                   </div>
                 </div>
@@ -112,13 +114,20 @@ export default function App({ Component, pageProps }) {
         </main>
 
         {/* ✅ 푸터 */}
-        <footer
-          className="w-full py-4 px-6 text-center text-sm"
-          style={{ color: 'var(--foreground)' }}
-        >
-          © {new Date().getFullYear()} WackyFoki. All rights reserved.
+        <footer className="w-full py-4 px-6 text-center text-sm" style={{ color: darkMode ? '#cccccc' : '#333333' }}>
+          © {new Date().getFullYear()} WackyFoki. All rights reserved. ·{' '}
+          <Link href="/terms" className="underline hover:text-gray-500 ml-1">이용약관</Link> ·{' '}
+          <Link href="/privacy" className="underline hover:text-gray-500 ml-1">개인정보 처리방침</Link>
         </footer>
       </div>
     </>
+  );
+}
+
+export default function App(props) {
+  return (
+    <UserProvider>
+      <AppLayout {...props} />
+    </UserProvider>
   );
 }

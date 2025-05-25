@@ -11,14 +11,19 @@ export default function UploadPage() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const router = useRouter();
 
-  // ✅ 로그인 여부 확인 → 없으면 /login으로 보냄
+  // ✅ 로그인 여부 확인
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (!user) {
         alert('로그인 후 이용 가능합니다.');
-        router.push('/login');
+        setTimeout(() => {
+          router.push('/login'); // ✅ 알림 후 확실히 리디렉트
+        }, 100);
+      } else {
+        setCheckingAuth(false);
       }
     });
     return () => unsubscribe();
@@ -35,13 +40,13 @@ export default function UploadPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!title || !description || !image) {
-      alert('제목, 설명, 이미지는 필수입니다!');
+    if (!title || !description) {
+      alert('제목과 설명은 필수입니다!');
       return;
     }
 
     if (
-      youtubeUrl &&
+      youtubeUrl.trim() !== '' &&
       !youtubeUrl.includes('youtube.com') &&
       !youtubeUrl.includes('youtu.be')
     ) {
@@ -52,14 +57,17 @@ export default function UploadPage() {
     setLoading(true);
 
     try {
-      const imageRef = ref(storage, `images/${image.name}-${Date.now()}`);
-      const snapshot = await uploadBytes(imageRef, image);
-      const imageUrl = await getDownloadURL(snapshot.ref);
+      let imageUrl = '';
+      if (image) {
+        const imageRef = ref(storage, `images/${image.name}-${Date.now()}`);
+        const snapshot = await uploadBytes(imageRef, image);
+        imageUrl = await getDownloadURL(snapshot.ref);
+      }
 
       await addDoc(collection(db, 'recipes'), {
         title,
         description,
-        youtubeUrl,
+        youtubeUrl: youtubeUrl.trim() || '',
         imageUrl,
         createdAt: Timestamp.now(),
       });
@@ -73,6 +81,8 @@ export default function UploadPage() {
 
     setLoading(false);
   };
+
+  if (checkingAuth) return <p style={{ padding: '2rem' }}>로그인 확인 중...</p>;
 
   return (
     <div style={{ padding: '2rem', maxWidth: 600, margin: '0 auto' }}>
@@ -99,7 +109,7 @@ export default function UploadPage() {
           />
         </div>
         <div>
-          <label>YouTube 링크:</label><br />
+          <label>YouTube 링크 (선택):</label><br />
           <input
             value={youtubeUrl}
             onChange={(e) => setYoutubeUrl(e.target.value)}
@@ -108,7 +118,7 @@ export default function UploadPage() {
           />
         </div>
         <div>
-          <label>대표 이미지:</label><br />
+          <label>대표 이미지 (선택):</label><br />
           <input
             type="file"
             accept="image/*"
