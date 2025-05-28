@@ -6,10 +6,14 @@ import {
   orderBy,
   updateDoc,
   doc,
+  addDoc,
+  serverTimestamp,
+  deleteDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { useRouter } from 'next/router';
 import { useUser } from '../contexts/UserContext';
+import CommentDrawer from '../components/CommentDrawer'; // ✅ 사이드패널 컴포넌트
 
 function extractYouTubeId(url) {
   try {
@@ -23,51 +27,88 @@ function extractYouTubeId(url) {
 
 export default function HomePage() {
   const [recipes, setRecipes] = useState([]);
+  const [topComments, setTopComments] = useState({});
+  const [commentInputs, setCommentInputs] = useState({});
+  const [drawerRecipeId, setDrawerRecipeId] = useState(null); // ✅ 사이드패널 활성화용
+
   const router = useRouter();
   const user = useUser();
 
   useEffect(() => {
-    const fetchRecipes = async () => {
+    (async () => {
       const q = query(collection(db, 'recipes'), orderBy('createdAt', 'desc'));
-      const snapshot = await getDocs(q);
-      const data = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-      }));
+      const snap = await getDocs(q);
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setRecipes(data);
-    };
-
-    fetchRecipes();
+    })();
   }, []);
 
-  const handleLike = async (recipeId) => {
-    if (!user) {
-      alert('로그인 후 이용 가능합니다.');
-      return;
-    }
+  const fetchTopComment = async (recipeId) => {
+    const ref = collection(db, 'recipes', recipeId, 'comments');
+    const q = query(ref, orderBy('likes', 'desc'));
+    const snap = await getDocs(q);
+    const top = snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
+    setTopComments((p) => ({ ...p, [recipeId]: top }));
+  };
 
-    const recipeRef = doc(db, 'recipes', recipeId);
-    const recipe = recipes.find((r) => r.id === recipeId);
-    const liked = recipe.likedBy?.includes(user.uid);
+  useEffect(() => {
+    if (recipes.length) recipes.forEach((r) => fetchTopComment(r.id));
+  }, [recipes]);
 
-    const updatedLikedBy = liked
-      ? recipe.likedBy.filter((uid) => uid !== user.uid)
-      : [...(recipe.likedBy || []), user.uid];
+  const toggleRecipeLike = async (recipeId) => {
+    if (!user) return alert('로그인 후 이용 가능합니다.');
+    const ref = doc(db, 'recipes', recipeId);
+    const rec = recipes.find((r) => r.id === recipeId);
+    const liked = rec.likedBy?.includes(user.uid);
+    const newLikedBy = liked
+      ? rec.likedBy.filter((u) => u !== user.uid)
+      : [...(rec.likedBy || []), user.uid];
 
-    const updatedLikes = updatedLikedBy.length;
+    await updateDoc(ref, { likedBy: newLikedBy, likes: newLikedBy.length });
+    setRecipes((p) =>
+      p.map((r) => (r.id === recipeId ? { ...r, likedBy: newLikedBy, likes: newLikedBy.length } : r))
+    );
+  };
 
-    await updateDoc(recipeRef, {
-      likedBy: updatedLikedBy,
-      likes: updatedLikes,
+  const handleCommentSubmit = async (e, recipeId) => {
+    e.preventDefault();
+    if (!user) return;
+    const content = commentInputs[recipeId]?.trim();
+    if (!content) return;
+
+    const ref = collection(db, 'recipes', recipeId, 'comments');
+    await addDoc(ref, {
+      author: user.displayName || user.email,
+      uid: user.uid,
+      content,
+      likes: 0,
+      likedBy: [],
+      createdAt: serverTimestamp(),
     });
 
-    setRecipes((prev) =>
-      prev.map((r) =>
-        r.id === recipeId
-          ? { ...r, likedBy: updatedLikedBy, likes: updatedLikes }
-          : r
-      )
-    );
+    setCommentInputs((p) => ({ ...p, [recipeId]: '' }));
+    await fetchTopComment(recipeId);
+  };
+
+  const deleteComment = async (recipeId, commentId) => {
+    if (!user) return;
+    const ok = confirm('정말로 댓글을 삭제하시겠습니까?');
+    if (!ok) return;
+
+    await deleteDoc(doc(db, 'recipes', recipeId, 'comments', commentId));
+    await fetchTopComment(recipeId);
+  };
+
+  const toggleCommentLike = async (recipeId, comment) => {
+    if (!user) return alert('로그인 후 이용 가능합니다.');
+    const ref = doc(db, 'recipes', recipeId, 'comments', comment.id);
+    const liked = comment.likedBy?.includes(user.uid);
+    const newLikedBy = liked
+      ? comment.likedBy.filter((u) => u !== user.uid)
+      : [...(comment.likedBy || []), user.uid];
+
+    await updateDoc(ref, { likedBy: newLikedBy, likes: newLikedBy.length });
+    await fetchTopComment(recipeId);
   };
 
   return (
@@ -75,13 +116,9 @@ export default function HomePage() {
       <h1 className="text-2xl font-bold mb-4">🍽️ 워키포키 괴식 피드</h1>
 
       {user ? (
-        <p className="text-orange-500 mb-6">
-          🔥 {user.displayName || user.email}님, 환영합니다!
-        </p>
+        <p className="text-orange-500 mb-6">🔥 {user.displayName || user.email}님, 환영합니다!</p>
       ) : (
-        <p className="text-gray-500 dark:text-gray-400 mb-6">
-          로그인하지 않으셨습니다.
-        </p>
+        <p className="text-gray-500 dark:text-gray-400 mb-6">로그인하지 않으셨습니다.</p>
       )}
 
       {recipes.length === 0 && <p>업로드된 괴식이 아직 없어요!</p>}
@@ -89,46 +126,31 @@ export default function HomePage() {
       <div className="flex flex-col gap-6">
         {recipes.map((recipe) => {
           const videoId = extractYouTubeId(recipe.youtubeUrl);
-          const liked = user && recipe.likedBy?.includes(user.uid);
+          const likedRecipe = user && recipe.likedBy?.includes(user.uid);
+          const topComment = topComments[recipe.id];
 
           return (
-            <div
-              key={recipe.id}
-              className="bg-[var(--card-bg)] text-[var(--card-text)] rounded-xl shadow-md p-6 transition hover:scale-[1.01]"
-            >
+            <div key={recipe.id} className="bg-[var(--card-bg)] text-[var(--card-text)] rounded-xl shadow-md p-6">
               <h2 className="text-lg font-semibold mb-1">{recipe.title}</h2>
               <p className="mb-4">{recipe.description}</p>
 
-              {videoId && (
+              {videoId ? (
                 <div className="relative pb-[56.25%] h-0 mb-4">
                   <iframe
                     src={`https://www.youtube.com/embed/${videoId}`}
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
                     className="absolute top-0 left-0 w-full h-full rounded-md"
+                    allowFullScreen
                   />
                 </div>
-              )}
-
-              {!videoId && recipe.imageUrl && (
-                <img
-                  src={recipe.imageUrl}
-                  alt={recipe.title}
-                  className="w-full h-auto rounded-md object-cover mb-4"
-                />
+              ) : (
+                recipe.imageUrl && <img src={recipe.imageUrl} alt={recipe.title} className="w-full rounded-md mb-4" />
               )}
 
               <div className="flex items-center gap-2 mb-3">
-                <button
-                  onClick={() => handleLike(recipe.id)}
-                  className="text-2xl"
-                >
-                  {liked ? '❤️' : '🤍'}
+                <button onClick={() => toggleRecipeLike(recipe.id)} className="text-2xl">
+                  {likedRecipe ? '❤️' : '🤍'}
                 </button>
-                <span className="text-sm text-[var(--card-text)] opacity-70">
-                  좋아요 {recipe.likes || 0}개
-                </span>
+                <span className="text-sm opacity-70">좋아요 {recipe.likes || 0}개</span>
               </div>
 
               <button
@@ -137,10 +159,58 @@ export default function HomePage() {
               >
                 👉 상세 보기
               </button>
+
+              <div className="mt-6 pt-4 border-t border-[var(--border-color)]">
+                {topComment && (
+                  <div className="mb-3 text-sm bg-[var(--card-bg)] p-2 rounded">
+                    💬 <strong>{topComment.author}</strong>: {topComment.content}
+                  </div>
+                )}
+
+                {user ? (
+                  <form onSubmit={(e) => handleCommentSubmit(e, recipe.id)} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={commentInputs[recipe.id] || ''}
+                      onChange={(e) =>
+                        setCommentInputs((p) => ({ ...p, [recipe.id]: e.target.value }))
+                      }
+                      placeholder="댓글을 입력하세요"
+                      className="flex-1 text-sm px-3 py-1 border border-[var(--border-color)] rounded bg-transparent"
+                    />
+                    <button
+                      type="submit"
+                      className="text-sm px-3 py-1 bg-[var(--header-bg)] text-[var(--foreground)] rounded hover:brightness-110 active:scale-95 transition"
+                    >
+                      등록
+                    </button>
+                  </form>
+                ) : (
+                  <p className="text-xs mt-2 text-gray-500 dark:text-gray-400">
+                    ※ 로그인 후 댓글을 작성할 수 있습니다.
+                  </p>
+                )}
+
+                <button
+                  onClick={() => setDrawerRecipeId(recipe.id)}
+                  className="text-xs underline mt-3"
+                >
+                  💬 댓글 전체 보기
+                </button>
+              </div>
             </div>
           );
         })}
       </div>
+
+      <CommentDrawer
+        recipeId={drawerRecipeId}
+        open={!!drawerRecipeId}
+        onClose={() => setDrawerRecipeId(null)}
+        user={user}
+        onDelete={deleteComment}
+        onLike={toggleCommentLike}
+      />
     </div>
   );
 }
