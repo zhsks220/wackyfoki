@@ -45,7 +45,7 @@ function AppLayout({ Component, pageProps }) {
 
       <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300 text-[14px] sm:text-[16px]">
         {/* ✅ 헤더 */}
-        <header className="w-full px-4 sm:px-6 py-4 flex justify-between items-center relative transition-colors duration-300">
+        <header className="w-full px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-2 relative transition-colors duration-300">
           <Link href="/" className="flex items-center space-x-2">
             <img src="/포키.png" alt="로고" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
             <span className="font-bold text-base sm:text-lg tracking-tight text-[var(--foreground)]">
@@ -53,22 +53,22 @@ function AppLayout({ Component, pageProps }) {
             </span>
           </Link>
 
-          <nav className="flex items-center space-x-4 sm:space-x-6 relative">
-            <Link href="/about" className="text-xs sm:text-sm hover:underline text-[var(--foreground)]">
+          <nav className="flex flex-wrap gap-2 sm:gap-4 justify-end items-center text-center max-w-full">
+            <Link href="/about" className="text-xs sm:text-sm break-words max-w-[96px] hover:underline text-[var(--foreground)]">
               About
             </Link>
-            <Link href="/contact" className="text-xs sm:text-sm hover:underline text-[var(--foreground)]">
+            <Link href="/contact" className="text-xs sm:text-sm break-words max-w-[96px] hover:underline text-[var(--foreground)]">
               Contact
             </Link>
             <Link
               href="/upload"
-              className="text-xs sm:text-sm px-3 sm:px-4 py-2 rounded transition bg-[var(--header-bg)] text-[var(--foreground)] hover:brightness-110"
+              className="text-xs sm:text-sm px-3 sm:px-4 py-2 break-words max-w-[96px] rounded transition bg-[var(--header-bg)] text-[var(--foreground)] hover:brightness-110"
             >
-              Upload Recipe here
+              Upload<br />Recipe
             </Link>
 
             {user && (
-              <div className="text-xs sm:text-sm text-[var(--foreground)]">
+              <div className="text-xs sm:text-sm break-words max-w-[96px] text-[var(--foreground)]">
                 {user.displayName || user.email}님
               </div>
             )}
@@ -77,7 +77,7 @@ function AppLayout({ Component, pageProps }) {
             <div className="relative inline-block text-left" ref={settingsRef}>
               <button
                 onClick={() => setSettingsOpen(prev => !prev)}
-                className="px-3 py-2 rounded text-xs sm:text-sm text-[var(--foreground)] bg-[var(--header-bg)] hover:brightness-110"
+                className="px-3 py-2 rounded text-xs sm:text-sm break-words max-w-[96px] text-[var(--foreground)] bg-[var(--header-bg)] hover:brightness-110"
               >
                 ⚙ 설정
               </button>
