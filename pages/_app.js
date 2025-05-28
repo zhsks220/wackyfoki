@@ -53,22 +53,22 @@ function AppLayout({ Component, pageProps }) {
             </span>
           </Link>
 
-          <nav className="flex flex-wrap gap-2 sm:gap-4 justify-end items-center text-center max-w-full">
-            <Link href="/about" className="text-xs sm:text-sm break-words max-w-[96px] hover:underline text-[var(--foreground)]">
+          <nav className="flex flex-wrap gap-2 sm:gap-4 justify-end items-center text-center max-w-full text-[12px] sm:text-[14px]">
+            <Link href="/about" className="break-words max-w-[96px] hover:underline text-[var(--foreground)]">
               About
             </Link>
-            <Link href="/contact" className="text-xs sm:text-sm break-words max-w-[96px] hover:underline text-[var(--foreground)]">
+            <Link href="/contact" className="break-words max-w-[96px] hover:underline text-[var(--foreground)]">
               Contact
             </Link>
             <Link
               href="/upload"
-              className="text-xs sm:text-sm px-3 sm:px-4 py-2 break-words max-w-[96px] rounded transition bg-[var(--header-bg)] text-[var(--foreground)] hover:brightness-110"
+              className="px-3 sm:px-4 py-2 break-words max-w-[96px] rounded transition bg-[var(--header-bg)] text-[var(--foreground)] hover:brightness-110"
             >
               Upload<br />Recipe
             </Link>
 
             {user && (
-              <div className="text-xs sm:text-sm break-words max-w-[96px] text-[var(--foreground)]">
+              <div className="break-words max-w-[96px] text-[var(--foreground)]">
                 {user.displayName || user.email}님
               </div>
             )}
@@ -77,7 +77,7 @@ function AppLayout({ Component, pageProps }) {
             <div className="relative inline-block text-left" ref={settingsRef}>
               <button
                 onClick={() => setSettingsOpen(prev => !prev)}
-                className="px-3 py-2 rounded text-xs sm:text-sm break-words max-w-[96px] text-[var(--foreground)] bg-[var(--header-bg)] hover:brightness-110"
+                className="px-3 py-2 rounded break-words max-w-[96px] text-[var(--foreground)] bg-[var(--header-bg)] hover:brightness-110"
               >
                 ⚙ 설정
               </button>
@@ -85,7 +85,7 @@ function AppLayout({ Component, pageProps }) {
               {settingsOpen && (
                 <div className="absolute right-0 mt-2 rounded shadow p-4 z-50 w-max min-w-[160px] overflow-hidden bg-[var(--header-bg)] text-[var(--foreground)] transition-colors duration-300">
                   <div className="flex items-center space-x-2 mb-3">
-                    <span className="text-xs sm:text-sm opacity-80">배경 모드</span>
+                    <span className="opacity-80">배경 모드</span>
                     <button
                       onClick={toggleDarkMode}
                       className={`w-12 h-6 flex items-center rounded-full p-1 transition duration-300 ease-in-out ${
@@ -101,7 +101,7 @@ function AppLayout({ Component, pageProps }) {
                   </div>
 
                   <Link href="/profile/edit">
-                    <div className="text-xs sm:text-sm hover:underline mt-1 cursor-pointer">
+                    <div className="hover:underline mt-1 cursor-pointer">
                       👤 프로필 설정
                     </div>
                   </Link>
