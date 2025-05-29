@@ -1,33 +1,30 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import { db, storage, auth } from '../firebase/config';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useUser } from '@/contexts/UserContext';
+import { X, UploadCloud } from 'lucide-react';
 
-export default function UploadPage() {
+export default function UploadModal({ isOpen, onClose }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState('');
   const [loading, setLoading] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-  const router = useRouter();
+  const { user } = useUser();
 
-  // ✅ 로그인 여부 확인
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (!user) {
-        alert('로그인 후 이용 가능합니다.');
-        setTimeout(() => {
-          router.push('/login'); // ✅ 알림 후 확실히 리디렉트
-        }, 100);
-      } else {
-        setCheckingAuth(false);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
+    if (!isOpen) {
+      setTitle('');
+      setDescription('');
+      setYoutubeUrl('');
+      setImage(null);
+      setPreview('');
+    }
+  }, [isOpen]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -37,9 +34,7 @@ export default function UploadPage() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     if (!title || !description) {
       alert('제목과 설명은 필수입니다!');
       return;
@@ -57,6 +52,14 @@ export default function UploadPage() {
     setLoading(true);
 
     try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        alert('사용자 정보를 불러올 수 없습니다.');
+        return;
+      }
+
+      const { displayName, uid, photoURL } = currentUser;
+
       let imageUrl = '';
       if (image) {
         const imageRef = ref(storage, `images/${image.name}-${Date.now()}`);
@@ -70,77 +73,99 @@ export default function UploadPage() {
         youtubeUrl: youtubeUrl.trim() || '',
         imageUrl,
         createdAt: Timestamp.now(),
+        authorName: displayName || '익명',
+        authorImage: user?.profileImage || photoURL || '',
+        uid,
       });
 
-      alert('🎉 업로드 성공! 메인 화면으로 이동합니다.');
-      router.push('/');
+      alert('🎉 업로드 성공!');
+      onClose();
     } catch (err) {
       console.error(err);
       alert('업로드 중 오류 발생.');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
-  if (checkingAuth) return <p style={{ padding: '2rem' }}>로그인 확인 중...</p>;
+  if (!isOpen) return null;
 
   return (
-    <div style={{ padding: '2rem', maxWidth: 600, margin: '0 auto' }}>
-      <h1>🍽️ 괴식 레시피 업로드</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>제목:</label><br />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4">
+      <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-xl w-full max-w-md p-6 relative">
+        {/* 닫기 버튼 */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-zinc-500 hover:text-white"
+        >
+          <X />
+        </button>
+
+        <h2 className="text-lg font-bold mb-4">🍽️ 새로운 레시피 공유</h2>
+
+        {/* 제목 */}
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="레시피 제목"
+          className="w-full p-2 mb-3 rounded bg-zinc-100 dark:bg-zinc-800"
+        />
+
+        {/* 설명 */}
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="레시피 설명"
+          className="w-full p-2 mb-4 rounded bg-zinc-100 dark:bg-zinc-800"
+          rows={3}
+        />
+
+        {/* YouTube 링크 */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-zinc-500 mb-1">YouTube 링크 (선택)</label>
           <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            maxLength={100}
-            required
-            style={{ width: '100%', marginBottom: '1rem' }}
-          />
-        </div>
-        <div>
-          <label>설명:</label><br />
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            required
-            style={{ width: '100%', marginBottom: '1rem' }}
-          />
-        </div>
-        <div>
-          <label>YouTube 링크 (선택):</label><br />
-          <input
+            type="text"
             value={youtubeUrl}
             onChange={(e) => setYoutubeUrl(e.target.value)}
             placeholder="https://www.youtube.com/..."
-            style={{ width: '100%', marginBottom: '1rem' }}
+            className="w-full p-2 rounded bg-zinc-100 dark:bg-zinc-800"
           />
         </div>
-        <div>
-          <label>대표 이미지 (선택):</label><br />
+
+        {/* 이미지 업로드 */}
+        <div className="mb-3">
+          <label className="block text-sm font-medium text-zinc-500 mb-1">대표 이미지 업로드</label>
           <input
             type="file"
             accept="image/*"
             onChange={handleImageChange}
-            style={{ marginBottom: '1rem' }}
+            className="w-full"
           />
-          {preview && (
-            <img
-              src={preview}
-              alt="미리보기"
-              style={{ maxWidth: '100%', marginBottom: '1rem' }}
-            />
-          )}
         </div>
+
+        {/* 이미지 미리보기 */}
+        {preview && (
+          <img
+            src={preview}
+            alt="미리보기"
+            className="w-full max-h-60 object-cover rounded mb-3"
+          />
+        )}
+
+        {/* 업로드 버튼 */}
         <button
-          type="submit"
+          onClick={handleSubmit}
           disabled={loading}
-          style={{ width: '100%', padding: '0.5rem' }}
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 flex justify-center items-center gap-2"
         >
-          {loading ? '⏳ 업로드 중...' : '🚀 업로드'}
+          {loading ? '⏳ 업로드 중...' : (
+            <>
+              <UploadCloud size={18} /> 업로드
+            </>
+          )}
         </button>
-      </form>
+      </div>
     </div>
   );
 }

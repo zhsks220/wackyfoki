@@ -22,10 +22,9 @@ export default function RecipeDetailPage() {
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
 
-  // 🔄 레시피 로딩
+  // 🔄 레시피 + 작성자 정보 로딩
   const fetchRecipe = useCallback(async () => {
     if (!id) return;
-
     setLoading(true);
 
     try {
@@ -35,7 +34,25 @@ export default function RecipeDetailPage() {
       if (docSnap.exists()) {
         const data = docSnap.data();
         const isLiked = user?.uid && data.likedBy?.includes(user.uid);
-        setRecipe({ id: docSnap.id, ...data });
+
+        // 👤 작성자 정보 동기화
+        let authorName = data.authorName || '익명';
+        let authorImage = data.authorImage || '/default-avatar.png';
+        if (data.uid) {
+          const userSnap = await getDoc(doc(db, 'users', data.uid));
+          if (userSnap.exists()) {
+            const udata = userSnap.data();
+            authorName = udata.displayName || authorName;
+            authorImage = udata.profileImage || authorImage;
+          }
+        }
+
+        setRecipe({
+          id: docSnap.id,
+          ...data,
+          authorName,
+          authorImage,
+        });
         setLiked(!!isLiked);
       } else {
         setRecipe(null);
@@ -93,6 +110,29 @@ export default function RecipeDetailPage() {
       <div style={{ padding: '2rem', maxWidth: 800, margin: '0 auto' }}>
         <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>{recipe.title}</h1>
 
+        {/* 👤 작성자 정보 */}
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <img
+            src={recipe.authorImage || '/default-avatar.png'}
+            alt={recipe.authorName || '작성자'}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              objectFit: 'cover',
+              marginRight: 10,
+            }}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = '/default-avatar.png';
+            }}
+          />
+          <span style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>
+            {recipe.authorName || '익명'}
+          </span>
+        </div>
+
+        {/* 🖼️ 이미지 */}
         {recipe.imageUrl ? (
           <img
             src={recipe.imageUrl}
@@ -109,9 +149,10 @@ export default function RecipeDetailPage() {
           <p style={{ fontStyle: 'italic', color: '#aaa' }}>이미지가 없습니다.</p>
         )}
 
+        {/* 📝 설명 */}
         <p style={{ fontSize: '1rem', marginBottom: '1rem' }}>{recipe.description}</p>
 
-        {/* 👍 좋아요 영역 */}
+        {/* 👍 좋아요 */}
         <div style={{ marginBottom: '1.5rem' }}>
           <button
             onClick={toggleLike}
