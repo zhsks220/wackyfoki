@@ -2,20 +2,21 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { db, storage } from '@/firebase/config';
+import { db, storage, auth } from '@/firebase/config';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { updateProfile } from 'firebase/auth';
 import { useUser } from '@/contexts/UserContext';
 import Image from 'next/image';
 
 export default function EditProfile() {
-  const user = useUser();
+  const { user, refreshUser } = useUser();
   const router = useRouter();
   const [nickname, setNickname] = useState('');
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState('');
   const [loading, setLoading] = useState(false);
-  const fileInputRef = useRef(null); // 🔹 파일 인풋 참조
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!user) return;
@@ -38,7 +39,7 @@ export default function EditProfile() {
     if (!file) return;
 
     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    const maxSize = 2 * 1024 * 1024; // 2MB
+    const maxSize = 2 * 1024 * 1024;
 
     if (!validTypes.includes(file.type)) {
       alert('JPG, PNG, WebP 형식의 이미지만 사용할 수 있습니다.');
@@ -67,10 +68,28 @@ export default function EditProfile() {
         imageUrl = await getDownloadURL(storageRef);
       }
 
-      await setDoc(doc(db, 'users', user.email), {
-        displayName: nickname,
-        profileImageUrl: imageUrl,
-      });
+      // ✅ 안전하게 필드 구성
+      const safeData = {};
+      if (nickname !== undefined && nickname.trim() !== '') {
+        safeData.displayName = nickname.trim();
+      }
+      if (imageUrl !== undefined && imageUrl !== '') {
+        safeData.profileImageUrl = imageUrl;
+      }
+
+      if (Object.keys(safeData).length > 0) {
+        await setDoc(doc(db, 'users', user.email), safeData, { merge: true });
+      }
+
+      // ✅ Firebase Auth에 닉네임 저장
+      if (auth.currentUser && safeData.displayName) {
+        await updateProfile(auth.currentUser, {
+          displayName: safeData.displayName,
+        });
+
+        await auth.currentUser.reload();
+        await refreshUser();
+      }
 
       alert('프로필이 저장되었습니다!');
       router.push('/');

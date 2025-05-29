@@ -1,13 +1,14 @@
+'use client';
+
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Head from 'next/head';
 import {
   doc,
   getDoc,
-  collection,
-  getDocs,
-  setDoc,
-  deleteDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
 } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useUser } from '@/contexts/UserContext';
@@ -15,75 +16,72 @@ import { useUser } from '@/contexts/UserContext';
 export default function RecipeDetailPage() {
   const router = useRouter();
   const { id } = router.query;
-  const user = useUser();
+  const { user } = useUser();
 
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
 
-  // 🔹 레시피 + 좋아요 상태 불러오기
-  useEffect(() => {
+  // 🔄 레시피 로딩
+  const fetchRecipe = useCallback(async () => {
     if (!id) return;
 
-    const fetchRecipe = async () => {
-      try {
-        const docRef = doc(db, 'recipes', id);
-        const docSnap = await getDoc(docRef);
+    setLoading(true);
 
-        if (docSnap.exists()) {
-          setRecipe({ id: docSnap.id, ...docSnap.data() });
+    try {
+      const docRef = doc(db, 'recipes', id);
+      const docSnap = await getDoc(docRef);
 
-          const likesRef = collection(db, 'recipes', id, 'likes');
-          const snapshot = await getDocs(likesRef);
-          setLikeCount(snapshot.size);
-
-          if (user) {
-            const userLike = snapshot.docs.find(doc => doc.id === user.uid);
-            setLiked(!!userLike);
-          }
-        } else {
-          setRecipe(null);
-        }
-      } catch (error) {
-        console.error('오류 발생:', error);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const isLiked = user?.uid && data.likedBy?.includes(user.uid);
+        setRecipe({ id: docSnap.id, ...data });
+        setLiked(!!isLiked);
+      } else {
         setRecipe(null);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    fetchRecipe();
+    } catch (err) {
+      console.error('레시피 로딩 실패:', err);
+      setRecipe(null);
+    } finally {
+      setLoading(false);
+    }
   }, [id, user]);
 
-  // 🔹 좋아요 토글
+  useEffect(() => {
+    fetchRecipe();
+  }, [fetchRecipe]);
+
+  // ❤️ 좋아요 토글
   const toggleLike = async () => {
-    if (!user) {
+    if (!user?.uid || !recipe) {
       alert('로그인 후 좋아요를 누를 수 있습니다.');
       return;
     }
 
-    const likeRef = doc(db, 'recipes', id, 'likes', user.uid);
+    const recipeRef = doc(db, 'recipes', recipe.id);
+    const isLiked = recipe.likedBy?.includes(user.uid);
+    const newLikedBy = isLiked
+      ? recipe.likedBy.filter(uid => uid !== user.uid)
+      : [...(recipe.likedBy || []), user.uid];
 
     try {
-      if (liked) {
-        await deleteDoc(likeRef);
-        setLiked(false);
-        setLikeCount(prev => prev - 1);
-      } else {
-        await setDoc(likeRef, {
-          liked: true,
-          timestamp: new Date(),
-        });
-        setLiked(true);
-        setLikeCount(prev => prev + 1);
-      }
+      await updateDoc(recipeRef, {
+        likedBy: isLiked ? arrayRemove(user.uid) : arrayUnion(user.uid),
+        likes: newLikedBy.length,
+      });
+
+      setRecipe(prev =>
+        prev ? { ...prev, likedBy: newLikedBy, likes: newLikedBy.length } : prev
+      );
+      setLiked(!isLiked);
     } catch (err) {
-      console.error('좋아요 처리 실패:', err);
-      alert('좋아요 처리 중 오류 발생');
+      console.error('좋아요 처리 중 오류:', err);
+      alert('좋아요 처리 중 오류가 발생했습니다.');
     }
   };
 
+  // 🕗 로딩 or 오류
   if (loading) return <p style={{ padding: '2rem' }}>⏳ 로딩 중...</p>;
   if (!recipe) return <p style={{ padding: '2rem' }}>😢 레시피를 찾을 수 없습니다.</p>;
 
@@ -113,7 +111,7 @@ export default function RecipeDetailPage() {
 
         <p style={{ fontSize: '1rem', marginBottom: '1rem' }}>{recipe.description}</p>
 
-        {/* 🔹 좋아요 버튼 및 수 */}
+        {/* 👍 좋아요 영역 */}
         <div style={{ marginBottom: '1.5rem' }}>
           <button
             onClick={toggleLike}
@@ -129,10 +127,11 @@ export default function RecipeDetailPage() {
             {liked ? '❤️' : '🤍'}
           </button>
           <span style={{ fontSize: '0.95rem', color: '#555' }}>
-            {likeCount}명이 좋아요를 눌렀어요
+            {recipe.likes || 0}명이 좋아요를 눌렀어요
           </span>
         </div>
 
+        {/* ▶ 유튜브 링크 */}
         {recipe.youtubeUrl && (
           <a
             href={recipe.youtubeUrl}

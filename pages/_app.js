@@ -2,13 +2,16 @@ import '@/styles/globals.css';
 import Head from 'next/head';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { UserProvider, useUser } from '@/contexts/UserContext';
 
 function AppLayout({ Component, pageProps }) {
   const [darkMode, setDarkMode] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const settingsRef = useRef(null);
-  const user = useUser();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const { user, logout } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -26,13 +29,18 @@ function AppLayout({ Component, pageProps }) {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (settingsRef.current && !settingsRef.current.contains(e.target)) {
-        setSettingsOpen(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
 
   return (
     <>
@@ -43,9 +51,9 @@ function AppLayout({ Component, pageProps }) {
         <link rel="icon" href="/포키.png" />
       </Head>
 
-      <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300 text-[14px] sm:text-[16px]">
-        {/* ✅ 헤더 */}
-        <header className="w-full px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-2 relative transition-colors duration-300">
+      <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300 text-[14px] sm:text-[16px] font-sans">
+        <header className="w-full px-4 sm:px-6 pt-4 sm:pt-6 pb-4 flex justify-between items-center relative transition-colors duration-300">
+          {/* 로고 */}
           <Link href="/" className="flex items-center space-x-2">
             <img src="/포키.png" alt="로고" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
             <span className="font-bold text-base sm:text-lg tracking-tight text-[var(--foreground)]">
@@ -53,70 +61,79 @@ function AppLayout({ Component, pageProps }) {
             </span>
           </Link>
 
-          <nav className="flex flex-wrap gap-2 sm:gap-4 justify-end items-center text-center max-w-full text-[12px] sm:text-[14px]">
-            <Link href="/about" className="break-words max-w-[96px] hover:underline text-[var(--foreground)]">
-              About
-            </Link>
-            <Link href="/contact" className="break-words max-w-[96px] hover:underline text-[var(--foreground)]">
-              Contact
-            </Link>
-            <Link
-              href="/upload"
-              className="px-3 sm:px-4 py-2 break-words max-w-[96px] rounded transition bg-[var(--header-bg)] text-[var(--foreground)] hover:brightness-110"
+          {/* 프로필 드롭다운 */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setDropdownOpen(prev => !prev)}
+              className="w-10 h-10 rounded-full overflow-hidden border border-gray-300 bg-white"
             >
-              Upload<br />Recipe
-            </Link>
-
-            {user && (
-              <div className="break-words max-w-[96px] text-[var(--foreground)]">
-                {user.displayName || user.email}님
-              </div>
-            )}
-
-            {/* ✅ 설정 버튼 */}
-            <div className="relative inline-block text-left" ref={settingsRef}>
-              <button
-                onClick={() => setSettingsOpen(prev => !prev)}
-                className="px-3 py-2 rounded break-words max-w-[96px] text-[var(--foreground)] bg-[var(--header-bg)] hover:brightness-110"
-              >
-                ⚙ 설정
-              </button>
-
-              {settingsOpen && (
-                <div className="absolute right-0 mt-2 rounded shadow p-4 z-50 w-max min-w-[160px] overflow-hidden bg-[var(--header-bg)] text-[var(--foreground)] transition-colors duration-300">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <span className="opacity-80">배경 모드</span>
-                    <button
-                      onClick={toggleDarkMode}
-                      className={`w-12 h-6 flex items-center rounded-full p-1 transition duration-300 ease-in-out ${
-                        darkMode ? 'bg-gray-700' : 'bg-gray-300'
-                      }`}
-                    >
-                      <div
-                        className={`w-4 h-4 rounded-full shadow-md transform transition duration-300 ease-in-out ${
-                          darkMode ? 'translate-x-6 bg-white' : 'translate-x-0 bg-black'
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  <Link href="/profile/edit">
-                    <div className="hover:underline mt-1 cursor-pointer">
-                      👤 프로필 설정
-                    </div>
-                  </Link>
+              {user?.photoURL?.startsWith('http') ? (
+                <img src={user.photoURL} alt="프로필" className="w-full h-full object-cover rounded-full" />
+              ) : (
+                <div className="w-full h-full bg-gray-300 flex items-center justify-center text-black text-sm font-semibold">
+                  {user?.displayName?.[0] || 'U'}
                 </div>
               )}
-            </div>
-          </nav>
+            </button>
+
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 rounded shadow p-4 z-50 w-64 bg-[var(--header-bg)] text-[var(--foreground)] transition">
+                {user && (
+                  <div className="font-semibold mb-2">{user.displayName}</div>
+                )}
+
+                <Link href="/profile/edit">
+                  <div className="py-2 hover:underline cursor-pointer">👤 프로필</div>
+                </Link>
+                <Link href="/about">
+                  <div className="py-2 hover:underline cursor-pointer">📄 About</div>
+                </Link>
+                <Link href="/contact">
+                  <div className="py-2 hover:underline cursor-pointer">✉️ Contact</div>
+                </Link>
+
+                {/* 🌗 다크모드 스위치 */}
+                <div className="flex items-center justify-between py-2">
+                  <span className="flex items-center gap-2">
+                    🌗 <span>다크모드</span>
+                  </span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={darkMode}
+                      onChange={toggleDarkMode}
+                    />
+                    <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:bg-blue-600 transition-all"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transform transition peer-checked:translate-x-5" />
+                  </label>
+                </div>
+
+                {user ? (
+                  <div
+                    onClick={handleLogout}
+                    className="py-2 text-red-500 hover:underline cursor-pointer"
+                  >
+                    🚪 로그아웃
+                  </div>
+                ) : (
+                  <Link href="/login">
+                    <div className="py-2 text-blue-500 hover:underline cursor-pointer">🔑 로그인</div>
+                  </Link>
+                )}
+
+                <Link href="/settings">
+                  <div className="pt-2 mt-2 border-t border-gray-300 hover:underline cursor-pointer">⚙️ 설정</div>
+                </Link>
+              </div>
+            )}
+          </div>
         </header>
 
-        {/* ✅ 메인 콘텐츠 */}
         <main className="flex-1 px-3 sm:px-6">
           <Component {...pageProps} />
         </main>
 
-        {/* ✅ 푸터 */}
         <footer className="w-full py-4 px-3 sm:px-6 text-center text-xs sm:text-sm bg-[var(--footer-bg)] text-[var(--foreground)]">
           © {new Date().getFullYear()} WackyFoki. All rights reserved. ·{' '}
           <Link href="/terms" className="underline hover:text-gray-500 ml-1">이용약관</Link> ·{' '}
