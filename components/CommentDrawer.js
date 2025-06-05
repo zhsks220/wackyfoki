@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { onSnapshot, collection, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import LikeButton from './LikeButton';
+
+import { useTranslation } from 'next-i18next';
 
 export default function CommentDrawer({
   recipeId,
@@ -10,10 +13,11 @@ export default function CommentDrawer({
   onClose,
   user,
   onDelete,
-  onLike,
 }) {
+  const { t } = useTranslation('common');
   const [comments, setComments] = useState([]);
 
+  /* ───────── 실시간 댓글 스트림 ───────── */
   useEffect(() => {
     if (!recipeId || !open) return;
 
@@ -22,8 +26,8 @@ export default function CommentDrawer({
       orderBy('createdAt', 'asc')
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setComments(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    const unsubscribe = onSnapshot(q, (snap) => {
+      setComments(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
 
     return () => unsubscribe();
@@ -32,46 +36,59 @@ export default function CommentDrawer({
   if (!open) return null;
 
   return (
-    <div className="fixed top-0 right-0 w-[400px] h-full bg-white dark:bg-zinc-900 shadow-lg z-50 p-4 overflow-y-auto">
-      <button
-        onClick={onClose}
-        className="text-sm text-gray-500 hover:text-black dark:hover:text-white float-right"
-      >
-        닫기 ✖
-      </button>
-      <h2 className="text-lg font-bold mb-4">💬 댓글 전체 보기</h2>
+    <div
+      className="fixed top-0 right-0 w-[400px] h-full shadow-lg z-50 p-4 overflow-y-auto"
+      style={{
+        backgroundColor: 'var(--card-bg)',
+        color: 'var(--card-text)',
+        borderLeft: '1px solid var(--border-color)',
+      }}
+    >
+      {/* ── 헤더 ── */}
+      <div className="flex justify-between items-start mb-4">
+        <h2 className="text-lg font-bold">💬 {t('see_all_comments')}</h2>
+        <button
+          onClick={onClose}
+          className="text-sm text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white"
+        >
+          {t('close')}
+        </button>
+      </div>
 
+      {/* ── 댓글 목록 ── */}
       {comments.length === 0 ? (
-        <p className="text-gray-500">댓글이 없습니다.</p>
+        <p style={{ color: 'var(--border-color)' }}>{t('no_comment')}</p>
       ) : (
         comments.map((c) => {
-          const liked = user && c.likedBy?.includes(user.uid);
-          const isAuthor = user && c.uid === user.uid;
+          const isAuthor     = user && c.uid === user.uid;
+          const displayName  = c.displayName || c.author || t('anonymous');
 
           return (
             <div
               key={c.id}
-              className="border-b border-gray-300 dark:border-gray-700 py-2 flex justify-between items-start"
+              className="border-b py-2 flex justify-between items-start"
+              style={{ borderColor: 'var(--border-color)' }}
             >
               <div className="flex-1">
-                <p className="font-semibold text-sm">{c.author || '익명'}</p>
-                <p className="text-sm text-gray-800 dark:text-gray-200 mb-1">
-                  {c.content}
-                </p>
-                <button
-                  onClick={() => onLike(recipeId, c)}
-                  className="text-xs text-red-500 hover:underline"
-                >
-                  {liked ? '❤️' : '🤍'} {c.likes}
-                </button>
+                <p className="font-semibold text-sm">{displayName}</p>
+                <p className="text-sm mb-1 whitespace-pre-wrap">{c.content}</p>
+
+                {/* 좋아요 버튼 */}
+                <LikeButton
+                  path={`recipes/${recipeId}/comments/${c.id}`}
+                  uid={user?.uid}
+                  likedBy={c.likedBy || []}
+                  likes={c.likes  || 0}
+                />
               </div>
 
+              {/* 작성자에게만 삭제 버튼 */}
               {isAuthor && (
                 <button
                   onClick={() => onDelete(recipeId, c.id)}
                   className="text-xs text-gray-400 hover:text-red-600 ml-2"
                 >
-                  삭제
+                  {t('delete')}
                 </button>
               )}
             </div>

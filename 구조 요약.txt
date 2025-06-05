@@ -1,0 +1,42 @@
+├── components/                   # 공통 UI 컴포넌트
+│   ├── CommentDrawer.js         # 댓글 전체 보기 사이드 패널
+│   ├── RecipeCard.jsx           # 피드/상세에 쓰이는 레시피 카드
+│   ├── StarRating.jsx           # 클릭/드래그 기반 별점 UI
+│   └── UploadModal.jsx          # 레시피 업로드 모달
+├── contexts/
+│   └── UserContext.js           # 로그인 유저 정보 전역 상태 관리
+├── firebase/
+│   └── config.js                # Firebase 초기화 및 연동 설정
+├── pages/                       # 라우팅되는 각 페이지
+│   ├── _app.js                  # 전역 레이아웃 설정
+│   ├── _document.js             # HTML <head> 등 커스터마이징
+│   ├── index.js                 # 메인 피드 페이지 (레시피 리스트)
+│   ├── feed.js                  # 임시 피드 (dummy 테스트용)
+│   ├── login.js                 # 로그인 페이지
+│   ├── about.js                 # About 페이지
+│   ├── contact.js               # Contact 페이지
+│   ├── privacy.js               # 개인정보 처리방침
+│   ├── terms.js                 # 서비스 이용약관
+│   ├── api/
+│   │   └── hello.js             # Next.js API 테스트용 기본 예시
+│   ├── edit/
+│   │   └── [id].js              # 레시피 수정 페이지
+│   ├── profile/
+│   │   ├── edit.js              # 사용자 프로필 수정 페이지
+│   │   └── orijin.ico           # 사용자 아이콘 이미지
+│   └── recipe/
+│       ├── [id].js              # 레시피 상세 페이지
+│       └── likes/               # (구조만 있음, 구현 미완 or 확장 예정)
+├── public/
+│   ├── 포키.png                 # 로고 또는 마스코트 이미지
+│   ├── default-avatar.png       # 기본 프로필 이미지
+│   └── 기타 SVG, 아이콘 파일    # UI 아이콘 리소스들
+├── styles/
+│   └── globals.css              # 전역 스타일 시트 (Tailwind 기반)
+├── utils/
+│   └── cropImage.js             # 이미지 자르기 유틸 함수
+├── package.json                 # 프로젝트 종속성 및 스크립트 설정
+├── tailwind.config.js           # TailwindCSS 커스터마이징 설정
+├── next.config.mjs              # Next.js 설정 파일
+├── .env.local                   # Firebase 등 민감한 환경 변수 저장
+├── README.md                    # 프로젝트 소개 및 설명

@@ -1,0 +1,104 @@
+{
+  "title_feed": "레시피 피드",
+  "not_logged_in": "로그인하지 않으셨습니다.",
+  "prepare_items": "준비물",
+  "cook_time": "분 소요",
+  "see_detail": "상세 보기",
+  "login_required_comment": "※ 로그인 후 댓글을 작성할 수 있습니다.",
+  "see_all_comments": "댓글 전체 보기",
+
+  "mypage": "마이페이지",
+  "about": "소개",
+  "contact": "문의",
+
+  "dark_mode": "다크모드",
+  "login": "로그인",
+  "logout": "로그아웃",
+  "settings": "설정",
+  "edit_profile": "프로필 수정",
+  "language": "언어 설정",
+
+  "difficulty": "난이도",
+  "taste": "맛",
+
+  "terms": "이용약관",
+  "privacy": "개인정보 처리방침",
+
+  "anonymous": "익명",
+  "upload_placeholder": "어떤 레시피를 공유하시겠습니까?",
+  "photo_youtube": "사진 및 유튜브",
+  "welcome": "{{name}}님, 환영합니다!",
+  "no_recipe": "업로드된 괴식이 아직 없어요!",
+  "comment_placeholder": "댓글을 입력하세요",
+  "submit": "등록",
+  "edit": "수정",
+  "delete": "삭제",
+  "confirm_delete_comment": "정말로 댓글을 삭제하시겠습니까?",
+  "confirm_delete_recipe": "정말 이 레시피를 삭제하시겠습니까?",
+  "login_required": "로그인 후 이용 가능합니다.",
+
+  "close": "닫기",
+  "no_comment": "댓글이 없습니다.",
+
+  "upload_title": "🍽️ 레시피 업로드",
+  "placeholder_title": "제목",
+  "placeholder_ingredients": "재료 / 준비물",
+  "placeholder_instructions": "조리 과정",
+  "placeholder_cook_time": "조리 시간 (분)",
+  "taste_rating": "맛 평가",
+  "difficulty_rating": "요리 난이도",
+  "placeholder_youtube": "YouTube 링크 (선택)",
+
+  "select_category": "카테고리 선택",
+  "category_meal": "식사",
+  "category_snack": "간식",
+  "category_dessert": "디저트",
+  "category_drink": "음료",
+  "category_experimental": "실험 요리",
+
+  "preview": "미리보기",
+  "upload": "업로드",
+  "uploading": "⏳ 업로드 중...",
+
+  "alert_fill_required": "제목, 준비물, 조리 과정을 모두 입력해주세요!",
+  "alert_invalid_youtube": "정상적인 YouTube 링크를 입력해주세요.",
+  "alert_no_user": "사용자 정보를 불러올 수 없습니다.",
+
+  "upload_success": "🎉 업로드 성공!",
+  "upload_error": "업로드 중 오류 발생.",
+
+  "choose_file": "파일 선택",
+  "loading": "로딩 중...",
+  "profile_image_alt": "프로필 이미지",
+  "no_nickname": "닉네임 없음",
+
+  "my_feed": "내가 올린 피드",
+  "liked_feed": "좋아요한 피드",
+  "my_comments": "내가 단 댓글",
+
+  "newest": "최신순",
+  "oldest": "오래된 순",
+
+  "no_my_feed": "아직 올린 피드가 없습니다.",
+  "no_liked_feed": "좋아요한 피드가 없습니다.",
+  "no_my_comments": "작성한 댓글이 없습니다.",
+
+  "about_title": "About - WackyFoki",
+  "about_meta": "WackyFoki는 전 세계의 기묘하고 독특한 레시피를 공유하는 플랫폼입니다.",
+  "about_heading": "WackyFoki란?",
+  "about_p1": "WackyFoki는 전 세계 사람들이 즐기는 기묘하고 독특한 레시피를 공유하는 커뮤니티 기반 플랫폼입니다. 우리는 전통적인 맛의 경계를 넘나드는 창의적이고 엉뚱한 음식들을 기록하고, 즐겁게 나누는 공간을 지향합니다.",
+  "about_p2": "누구나 쉽게 레시피를 업로드하고, 다른 사람들의 작품을 감상하고, 댓글과 좋아요로 반응을 남길 수 있습니다. 음식의 모양이 이상하다고 해서 맛도 이상한 건 아니니까요!",
+  "about_p3": "재미와 창의력을 바탕으로, 음식에 대한 새로운 시선을 나누고 싶은 분들께 열린 공간입니다. WackyFoki는 그런 순간들을 환영합니다.",
+  "about_ops_heading": "운영 정보",
+  "about_ops_body": "본 사이트는 개인이 운영하는 프로젝트로, Google AdSense 및 파트너 프로그램을 통해 일부 수익을 얻을 수 있습니다. 게시물의 저작권은 각 작성자에게 있으며, 부적절한 콘텐츠는 사전 경고 없이 삭제될 수 있습니다. 문의:",
+  "about_notice": "※ 본 플랫폼은 유저가 직접 작성한 콘텐츠를 기반으로 하며, 관리자는 부적절한 내용에 대해 사전 경고 없이 삭제할 수 있습니다.",
+
+  "contact_title": "Contact - WackyFoki",
+  "contact_meta": "WackyFoki에 문의하고 싶으신가요? 언제든지 연락 주세요.",
+  "contact_heading": "Contact Us",
+  "contact_p1": "WackyFoki에 대해 궁금한 점이 있으신가요? 제휴 문의, 문제 신고, 피드백은 아래 이메일을 통해 언제든지 연락 주세요.",
+  "contact_email_label": "이메일",
+  "contact_owner_heading": "운영자 정보",
+  "contact_owner_body": "본 사이트는 오리진 (OriJin)이 개인적으로 운영하고 있으며, 현재는 테스트 중인 프로젝트입니다. 모든 문의는 contact@wackyfoki.com 으로 받습니다.",
+  "contact_notice": "※ 회신은 평일 기준 1~2일 이내에 드릴 수 있습니다."
+}

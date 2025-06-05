@@ -1,6 +1,7 @@
 import { FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa';
+import { useTranslation } from 'next-i18next';
 
-/* 별점 한 줄 */
+/* 별점 한 줄 -------------------------------------------------- */
 function StarRow({ value = 0 }) {
   const v = Number(value) || 0;
   return (
@@ -19,70 +20,104 @@ function StarRow({ value = 0 }) {
   );
 }
 
-/* YouTube ID 추출 */
+/* YouTube ID 추출 -------------------------------------------- */
 function extractYouTubeId(url = '') {
-  const m = url.match(/(?:youtube\.com.*[?&]v=|youtu\.be\/)([^&?/]+)/);
+  const m = url.match(/(?:youtube\.com.*[?&]v=|youtu\.be\/)([^&?\/]+)/);
   return m && m[1] ? m[1] : '';
 }
 
+/* 레시피 카드 -------------------------------------------------- */
 export default function RecipeCard({ recipe }) {
-  /* 필드 이름이 다를 때 대응 */
+  const { t } = useTranslation('common');
+
   const {
     title,
     description,
     imageUrl,
     youtubeUrl,
-    cookingTime,            // 표준 필드
-    cookTime,               // 예전/다른 이름
+    cookingTime,
+    cookTime,
     difficulty = 0,
-    rating,                 // 표준: 맛 평가
-    taste,                  // 예전/다른 이름
+    rating,
+    taste,
     authorName,
     authorAvatar,
+    ingredients = '',
+    materials: _materials,
   } = recipe;
 
-  /* 최종 값 매핑 */
-  const minutes = cookingTime ?? cookTime ?? '';
-  const tasteValue = rating ?? taste ?? 0;
+  /* 준비물 필드 통일 */
+  const materials = Array.isArray(_materials)
+    ? _materials
+    : ingredients
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+  const minutes     = cookingTime ?? cookTime ?? '';
+  const tasteValue  = rating ?? taste ?? 0;
+  const displayName = authorName || t('anonymous');
 
   return (
-    <article className="bg-neutral-900 text-neutral-100 rounded-xl p-6 shadow-md space-y-4">
-      {/* ─── 상단: 작성자 + 별점 ─── */}
+    <article
+      className="rounded-xl p-6 shadow-md space-y-4 transition-colors duration-300"
+      style={{
+        backgroundColor: 'var(--recipe-card-bg)',
+        color:          'var(--recipe-card-text)',
+      }}
+    >
+      {/* ── 상단: 작성자 + 별점 ── */}
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-2">
           {authorAvatar && (
             <img
               src={authorAvatar}
-              alt={authorName}
+              alt={displayName}
               className="w-8 h-8 rounded-full object-cover"
             />
           )}
-          <span className="font-semibold">{authorName}</span>
+          <span className="font-semibold">{displayName}</span>
         </div>
+
         <div className="space-y-1 text-xs text-right">
           <div>
-            <span className="mr-1 text-neutral-400">난이도</span>
+            <span style={{ color: 'var(--border-color)' }} className="mr-1">
+              {t('difficulty')}
+            </span>
             <StarRow value={difficulty} />
           </div>
           <div>
-            <span className="mr-1 text-neutral-400">맛</span>
+            <span style={{ color: 'var(--border-color)' }} className="mr-1">
+              {t('taste')}
+            </span>
             <StarRow value={tasteValue} />
           </div>
         </div>
       </div>
 
-      {/* ─── 제목 ─── */}
+      {/* ── 제목 ── */}
       <h2 className="text-xl font-bold">{title}</h2>
 
-      {/* ─── 설명 ─── */}
-      <p className="leading-relaxed whitespace-pre-wrap">{description}</p>
-
-      {/* ─── 조리 시간 ─── */}
-      {minutes !== '' && (
-        <div className="text-sm text-neutral-400">🕒 {minutes}분 소요</div>
+      {/* ── 준비물 ── */}
+      {materials.length > 0 && (
+        <div className="mt-2 pt-2 border-t border-[var(--border-color)] text-sm text-neutral-600 dark:text-neutral-400">
+          <span className="font-medium">{t('prepare_items')}:</span>{' '}
+          {materials.join(', ')}
+        </div>
       )}
 
-      {/* ─── 썸네일 or YouTube ─── */}
+      {/* ── 설명 ── */}
+      <p className="leading-relaxed whitespace-pre-wrap">{description}</p>
+
+      {/* ── 조리 시간 ── */}
+      {minutes !== '' && (
+        <div style={{ color: 'var(--border-color)' }} className="text-sm">
+          🕒 {minutes}
+          {t('cook_time')}
+        </div>
+      )}
+
+      {/* ── 썸네일 / YouTube ── */}
       {youtubeUrl ? (
         <div className="aspect-video w-full overflow-hidden rounded-lg">
           <iframe

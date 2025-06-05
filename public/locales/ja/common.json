@@ -1,0 +1,104 @@
+{
+  "title_feed": "レシピフィード",
+  "not_logged_in": "ログインしていません。",
+  "prepare_items": "材料",
+  "cook_time": "分",
+  "see_detail": "詳細を見る",
+  "login_required_comment": "※ コメントを書くにはログインが必要です。",
+  "see_all_comments": "すべてのコメントを見る",
+
+  "mypage": "マイページ",
+  "about": "紹介",
+  "contact": "お問い合わせ",
+
+  "dark_mode": "ダークモード",
+  "login": "ログイン",
+  "logout": "ログアウト",
+  "settings": "設定",
+  "edit_profile": "プロフィール編集",
+  "language": "言語設定",
+
+  "difficulty": "難易度",
+  "taste": "味",
+
+  "terms": "利用規約",
+  "privacy": "プライバシーポリシー",
+
+  "anonymous": "匿名",
+  "upload_placeholder": "どんなレシピを共有しますか？",
+  "photo_youtube": "写真・YouTube",
+  "welcome": "{{name}}さん、ようこそ！",
+  "no_recipe": "まだ投稿された変なレシピはありません！",
+  "comment_placeholder": "コメントを入力してください",
+  "submit": "送信",
+  "edit": "編集",
+  "delete": "削除",
+  "confirm_delete_comment": "本当にコメントを削除しますか？",
+  "confirm_delete_recipe": "本当にこのレシピを削除しますか？",
+  "login_required": "この機能を利用するにはログインが必要です。",
+
+  "close": "閉じる",
+  "no_comment": "コメントがありません。",
+
+  "upload_title": "🍽️ レシピ投稿",
+  "placeholder_title": "タイトル",
+  "placeholder_ingredients": "材料・準備物",
+  "placeholder_instructions": "作り方",
+  "placeholder_cook_time": "調理時間（分）",
+  "taste_rating": "味の評価",
+  "difficulty_rating": "調理の難しさ",
+  "placeholder_youtube": "YouTubeリンク（任意）",
+
+  "select_category": "カテゴリーを選択",
+  "category_meal": "食事",
+  "category_snack": "スナック",
+  "category_dessert": "デザート",
+  "category_drink": "飲み物",
+  "category_experimental": "実験料理",
+
+  "preview": "プレビュー",
+  "upload": "アップロード",
+  "uploading": "⏳ アップロード中...",
+
+  "alert_fill_required": "タイトル・材料・作り方を入力してください！",
+  "alert_invalid_youtube": "正しいYouTubeリンクを入力してください。",
+  "alert_no_user": "ユーザー情報を取得できませんでした。",
+
+  "upload_success": "🎉 アップロード成功！",
+  "upload_error": "アップロード中にエラーが発生しました。",
+
+  "choose_file": "ファイルを選択",
+  "loading": "読み込み中...",
+  "profile_image_alt": "プロフィール画像",
+  "no_nickname": "ニックネームなし",
+
+  "my_feed": "自分の投稿",
+  "liked_feed": "いいねした投稿",
+  "my_comments": "自分のコメント",
+
+  "newest": "新着順",
+  "oldest": "古い順",
+
+  "no_my_feed": "まだレシピを投稿していません。",
+  "no_liked_feed": "いいねしたレシピがありません。",
+  "no_my_comments": "コメントを投稿していません。",
+
+  "about_title": "WackyFokiについて",
+  "about_meta": "WackyFokiは世界中の奇妙でユニークなレシピを共有するプラットフォームです。",
+  "about_heading": "WackyFokiとは？",
+  "about_p1": "WackyFokiは、世界中の人々が奇抜で創造的なレシピを共有するコミュニティベースのプラットフォームです。伝統的な味の枠を超える実験的な料理を楽しみましょう。",
+  "about_p2": "誰でも簡単にレシピを投稿し、他の人の作品を見たり、コメントやいいねで反応することができます。見た目が変でも、美味しいかもしれません！",
+  "about_p3": "食の新しい視点を楽しみたい方のための開かれた場所です。WackyFokiはそんな瞬間を歓迎します。",
+  "about_ops_heading": "運営情報",
+  "about_ops_body": "このサイトは個人運営であり、Google AdSenseやパートナープログラムによって収益を得る場合があります。投稿の著作権は各投稿者にあり、不適切な内容は予告なく削除されることがあります。",
+  "about_notice": "※ コンテンツはユーザーによって投稿されたものであり、不適切な内容は管理者の判断で削除されることがあります。",
+
+  "contact_title": "お問い合わせ - WackyFoki",
+  "contact_meta": "WackyFokiへのお問い合わせはお気軽にどうぞ。",
+  "contact_heading": "お問い合わせ",
+  "contact_p1": "WackyFokiに関するご質問、提携のご相談、不具合の報告やフィードバックは、以下のメールアドレスまでお気軽にご連絡ください。",
+  "contact_email_label": "メールアドレス",
+  "contact_owner_heading": "運営者情報",
+  "contact_owner_body": "本サイトはOriJinが個人で運営しており、現在はテスト中のプロジェクトです。すべてのお問い合わせは contact@wackyfoki.com までお願いいたします。",
+  "contact_notice": "※ 平日基準で1～2日以内に返信いたします。"
+}
