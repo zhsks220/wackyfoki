@@ -7,30 +7,26 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useUser } from '@/contexts/UserContext';
 import { X, UploadCloud, Image as ImageIcon } from 'lucide-react';
 import StarRating from './StarRating';
-
 import { useTranslation } from 'next-i18next';
 
-/* 카테고리 키 → 번역으로 표시 */
 const CATEGORY_KEYS = ['meal', 'snack', 'dessert', 'drink', 'experimental'];
 
 export default function UploadModal({ isOpen, onClose, onUploaded }) {
   const { t } = useTranslation('common');
   const { user } = useUser();
 
-  /* 폼 상태 ---------------------------------------------------- */
-  const [title, setTitle]               = useState('');
-  const [ingredients, setIngredients]   = useState('');
+  const [title, setTitle] = useState('');
+  const [ingredients, setIngredients] = useState('');
   const [instructions, setInstructions] = useState('');
-  const [cookTime, setCookTime]         = useState('');
-  const [taste, setTaste]               = useState(0);
-  const [difficulty, setDifficulty]     = useState(0);
-  const [youtubeUrl, setYoutubeUrl]     = useState('');
-  const [image, setImage]               = useState(null);
-  const [preview, setPreview]           = useState('');
-  const [category, setCategory]         = useState('');
-  const [loading, setLoading]           = useState(false);
+  const [cookTime, setCookTime] = useState('');
+  const [taste, setTaste] = useState(0);
+  const [difficulty, setDifficulty] = useState(0);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState('');
+  const [category, setCategory] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  /* 모달 닫히면 폼 초기화 ------------------------------------- */
   useEffect(() => {
     if (!isOpen) {
       setTitle('');
@@ -46,14 +42,12 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
     }
   }, [isOpen]);
 
-  /* 파일 선택 -------------------------------------------------- */
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setImage(file);
     if (file) setPreview(URL.createObjectURL(file));
   };
 
-  /* 업로드 ------------------------------------------------------ */
   const handleSubmit = async () => {
     if (!title || !ingredients || !instructions) {
       alert(t('alert_fill_required'));
@@ -77,12 +71,11 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
         return;
       }
 
-      /* 이미지 스토리지 업로드 */
       let imageUrl = '';
       if (image) {
         const imageRef = ref(storage, `images/${image.name}-${Date.now()}`);
-        const snap     = await uploadBytes(imageRef, image);
-        imageUrl       = await getDownloadURL(snap.ref);
+        const snap = await uploadBytes(imageRef, image);
+        imageUrl = await getDownloadURL(snap.ref);
       }
 
       await addDoc(collection(db, 'recipes'), {
@@ -95,10 +88,10 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
         youtubeUrl: youtubeUrl.trim() || '',
         imageUrl,
         category,
-        createdAt  : serverTimestamp(),
-        authorName : currentUser.displayName || t('anonymous'),
+        createdAt: serverTimestamp(),
+        authorName: currentUser.displayName || t('anonymous'),
         authorImage: user?.profileImage || currentUser.photoURL || '',
-        uid        : currentUser.uid,
+        uid: currentUser.uid,
       });
 
       alert(t('upload_success'));
@@ -112,14 +105,11 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
     }
   };
 
-  /* 모달이 닫혀 있으면 렌더링하지 않음 ------------------------- */
   if (!isOpen) return null;
 
-  /* -------------------------- UI ----------------------------- */
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4">
-      <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-xl w-full max-w-md p-6 relative">
-        {/* 닫기 */}
+      <div className="bg-[var(--background)] text-[var(--foreground)] rounded-lg shadow-xl w-full max-w-md p-6 relative transition">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-zinc-500 hover:text-white"
@@ -129,43 +119,38 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
 
         <h2 className="text-lg font-bold mb-4">{t('upload_title')}</h2>
 
-        {/* 제목 */}
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={t('placeholder_title')}
-          className="w-full p-2 mb-3 rounded bg-zinc-100 dark:bg-zinc-800"
+          className="w-full p-2 mb-3 rounded border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--foreground)]"
         />
 
-        {/* 준비물 */}
         <textarea
           value={ingredients}
           onChange={(e) => setIngredients(e.target.value)}
           placeholder={t('placeholder_ingredients')}
           rows={3}
-          className="w-full p-2 mb-3 rounded bg-zinc-100 dark:bg-zinc-800"
+          className="w-full p-2 mb-3 rounded border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--foreground)]"
         />
 
-        {/* 조리 과정 */}
         <textarea
           value={instructions}
           onChange={(e) => setInstructions(e.target.value)}
           placeholder={t('placeholder_instructions')}
           rows={6}
-          className="w-full p-2 mb-3 rounded bg-zinc-100 dark:bg-zinc-800"
+          className="w-full p-2 mb-3 rounded border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--foreground)]"
         />
 
-        {/* 조리 시간 */}
         <input
           type="number"
           value={cookTime}
           onChange={(e) => setCookTime(e.target.value)}
           placeholder={t('placeholder_cook_time')}
-          className="w-full p-2 mb-3 rounded bg-zinc-100 dark:bg-zinc-800"
+          className="w-full p-2 mb-3 rounded border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--foreground)]"
         />
 
-        {/* 맛/난이도 별점 */}
         <div className="mb-3">
           <label className="block mb-1 text-sm text-zinc-500">
             {t('taste_rating')}
@@ -180,20 +165,18 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
           <StarRating rating={difficulty} onRatingChange={setDifficulty} />
         </div>
 
-        {/* YouTube 링크 */}
         <input
           type="text"
           value={youtubeUrl}
           onChange={(e) => setYoutubeUrl(e.target.value)}
           placeholder={t('placeholder_youtube')}
-          className="w-full p-2 mb-3 rounded bg-zinc-100 dark:bg-zinc-800"
+          className="w-full p-2 mb-3 rounded border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--foreground)]"
         />
 
-        {/* 카테고리 */}
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="w-full p-2 mb-3 rounded bg-zinc-100 dark:bg-zinc-800"
+          className="w-full p-2 mb-3 rounded border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--foreground)]"
         >
           <option value="">{t('select_category')}</option>
           {CATEGORY_KEYS.map((key) => (
@@ -203,7 +186,6 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
           ))}
         </select>
 
-        {/* 이미지 업로드 (커스텀) */}
         <input
           id="upload"
           type="file"
@@ -213,9 +195,7 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
         />
         <label
           htmlFor="upload"
-          className="mb-2 inline-flex items-center gap-1 px-3 py-2 rounded
-                     bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200
-                     cursor-pointer text-sm"
+          className="mb-2 inline-flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-sm bg-[var(--input-bg)] hover:bg-zinc-200 text-[var(--foreground)]"
         >
           <ImageIcon size={16} /> {t('choose_file')}
         </label>
@@ -228,12 +208,10 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
           />
         )}
 
-        {/* 제출 */}
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700
-                     flex justify-center items-center gap-2"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 flex justify-center items-center gap-2"
         >
           {loading ? t('uploading') : (
             <>

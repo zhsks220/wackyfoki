@@ -10,8 +10,10 @@ import { useUser } from '@/contexts/UserContext';
 import Image from 'next/image';
 import Cropper from 'react-easy-crop';
 import getCroppedImg from '@/utils/cropImage';
+import { useTranslation } from 'next-i18next';
 
 export default function EditProfile() {
+  const { t } = useTranslation('common');
   const { user, refreshUser } = useUser();
   const router = useRouter();
   const [nickname, setNickname] = useState('');
@@ -49,21 +51,19 @@ export default function EditProfile() {
     const maxSize = 2 * 1024 * 1024;
 
     if (!validTypes.includes(file.type)) {
-      alert('JPG, PNG, WebP 형식의 이미지만 가능합니다.');
+      alert(t('alert_invalid_image_format'));
       fileInputRef.current.value = null;
       return;
     }
 
     if (file.size > maxSize) {
-      alert('이미지는 2MB 이하로 제한됩니다.');
+      alert(t('alert_image_size_limit'));
       fileInputRef.current.value = null;
       return;
     }
 
     setImage(file);
     setShowCropModal(true);
-
-    // ✅ 동일 이미지 다시 선택 가능하도록 초기화
     fileInputRef.current.value = null;
   };
 
@@ -106,24 +106,24 @@ export default function EditProfile() {
         await refreshUser();
       }
 
-      alert('프로필이 저장되었습니다!');
+      alert(t('alert_profile_saved'));
       router.push('/');
     } catch (err) {
       console.error(err);
-      alert('저장 중 오류 발생');
+      alert(t('alert_save_error'));
     } finally {
       setLoading(false);
     }
   };
 
-  if (!user) return <p className="p-6">로그인 후 이용해 주세요.</p>;
+  if (!user) return <p className="p-6">{t('alert_login_required')}</p>;
 
   return (
     <div className="max-w-xl mx-auto px-6 py-12 text-[var(--foreground)] relative">
-      <h1 className="text-2xl font-bold mb-6">👤 프로필 설정</h1>
+      <h1 className="text-2xl font-bold mb-6">👤 {t('edit_profile_heading')}</h1>
 
       <div className="mb-4">
-        <label className="block mb-1">닉네임</label>
+        <label className="block mb-1">{t('edit_profile_nickname')}</label>
         <input
           type="text"
           value={nickname}
@@ -133,7 +133,7 @@ export default function EditProfile() {
       </div>
 
       <div className="mb-6">
-        <label className="block mb-1">프로필 이미지</label>
+        <label className="block mb-1">{t('edit_profile_image')}</label>
         {preview && (
           <Image
             src={preview}
@@ -155,7 +155,7 @@ export default function EditProfile() {
           onClick={() => fileInputRef.current?.click()}
           className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-black rounded"
         >
-          이미지 선택하기
+          {t('edit_profile_select_image')}
         </button>
       </div>
 
@@ -164,10 +164,9 @@ export default function EditProfile() {
         disabled={loading}
         className="bg-black text-white px-6 py-2 rounded hover:bg-gray-800"
       >
-        {loading ? '저장 중...' : '저장하기'}
+        {loading ? t('saving') : t('save')}
       </button>
 
-      {/* ✅ 자체 Crop 모달 */}
       {showCropModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
           <div className="bg-white rounded-lg p-4 w-full max-w-md max-h-[90vh] overflow-hidden">
@@ -197,13 +196,13 @@ export default function EditProfile() {
                   onClick={() => setShowCropModal(false)}
                   className="px-4 py-2 bg-gray-500 text-white rounded"
                 >
-                  취소
+                  {t('cancel')}
                 </button>
                 <button
                   onClick={handleCropDone}
                   className="px-4 py-2 bg-blue-600 text-white rounded"
                 >
-                  자르기 완료
+                  {t('crop_done')}
                 </button>
               </div>
             </div>

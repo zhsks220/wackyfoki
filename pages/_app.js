@@ -1,10 +1,5 @@
-/* pages/_app.js
-   ──────────────────────────────────────────────────────────────
-   • 🌐 Language 메뉴: “한국어 / English / 日本語 / 中文” 라벨 표시
-   • 언어를 클릭하면 router.push → window.location.reload()
-     → 즉시 새 JSON이 로드되어 번역이 바로 반영
-   • 나머지 구조는 이전 버전과 동일
-   ────────────────────────────────────────────────────────────── */
+'use client';
+
 import '@/styles/globals.css';
 import Head from 'next/head';
 import { useState, useEffect, useRef } from 'react';
@@ -15,8 +10,12 @@ import { appWithTranslation, useTranslation } from 'next-i18next';
 import nextI18NextConfig from '../next-i18next.config';
 
 import { UserProvider, useUser } from '@/contexts/UserContext';
+import { SearchProvider, useSearch } from '@/contexts/SearchContext';
+import { CategoryProvider } from '@/contexts/CategoryContext';
 
-/* 🌐 지원 언어: 코드 + 라벨 */
+import StickySearchBar from '@/components/StickySearchBar';
+import CategoryButtons from '@/components/CategoryButtons';
+
 const LOCALES = [
   { code: 'ko', label: '한국어' },
   { code: 'en', label: 'English' },
@@ -24,19 +23,19 @@ const LOCALES = [
   { code: 'zh', label: '中文' },
 ];
 
-function AppLayout({ Component, pageProps }) {
-  const { t }  = useTranslation('common');
+function InnerLayout({ Component, pageProps }) {
+  const { t } = useTranslation('common');
   const router = useRouter();
+  const { setKeyword, setSearchCategory } = useSearch();
 
-  const [darkMode,     setDarkMode]     = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [langOpen,     setLangOpen]     = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
 
   const dropdownRef = useRef(null);
   const { user, logout } = useUser();
 
-  /* 시스템 다크모드 기본값 */
   useEffect(() => {
     const prefers = matchMedia('(prefers-color-scheme: dark)').matches;
     setDarkMode(prefers);
@@ -51,7 +50,6 @@ function AppLayout({ Component, pageProps }) {
     });
   };
 
-  /* 드롭다운 외부 클릭 닫기 */
   useEffect(() => {
     const handle = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -69,32 +67,43 @@ function AppLayout({ Component, pageProps }) {
     router.push('/');
   };
 
-  /* 현재 경로 유지하며 언어 전환 + 강제 새로고침 */
   const changeLocale = (loc) => {
-    router
-      .push(router.asPath, undefined, { locale: loc, scroll: false })
-      .then(() => window.location.reload());
+    router.push(router.asPath, undefined, { locale: loc, scroll: false }).then(() => {
+      window.location.reload();
+    });
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] transition-colors">
       <Head>
         <title>WackyFoki</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/포키.png" />
       </Head>
 
-      <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] transition-colors">
-        {/* ───────── 헤더 ───────── */}
-        <header className="w-full px-4 sm:px-6 pt-4 sm:pt-6 pb-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <img src="/포키.png" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
-            <span className="font-bold text-base sm:text-lg">
-              WACKY <span className="font-light">FOKI</span>
-            </span>
-          </Link>
+      <header className="w-full px-4 sm:px-6 pt-4 pb-4 flex items-center justify-between relative z-40 gap-2">
+        {/* 로고 */}
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <img src="/포키.png" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
+          <span className="font-bold text-base sm:text-lg">
+            WACKY <span className="font-light">FOKI</span>
+          </span>
+        </Link>
 
-          {/* 프로필 드롭다운 */}
+        {/* 검색창 (모바일: 로고와 프로필 사이 / PC: 중앙 고정) */}
+        <div className="flex-1 mx-2 sm:absolute sm:left-1/2 sm:-translate-x-1/2 sm:mx-0" style={{ maxWidth: '100%', width: '100%' }}>
+          <div className="w-full max-w-[20rem] sm:max-w-[44.5rem] mx-auto">
+            <StickySearchBar
+              onSearch={({ keyword, category }) => {
+                setKeyword(keyword);
+                setSearchCategory(category);
+              }}
+            />
+          </div>
+        </div>
+
+        {/* 프로필 및 드롭다운 */}
+        <div className="flex items-center gap-4 shrink-0">
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(p => !p)}
@@ -104,19 +113,20 @@ function AppLayout({ Component, pageProps }) {
                 src={user?.photoURL || '/default-avatar.png'}
                 alt="profile"
                 className="w-full h-full object-cover"
-                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/default-avatar.png'; }}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = '/default-avatar.png';
+                }}
               />
             </button>
 
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-64 rounded shadow p-4 z-50 bg-[var(--header-bg)]">
                 {user && <div className="font-semibold mb-2">{user.displayName}</div>}
-
                 <Link href="/mypage"><div className="py-2 hover:underline cursor-pointer">📄 {t('mypage')}</div></Link>
                 <Link href="/about"><div className="py-2 hover:underline cursor-pointer">📄 {t('about')}</div></Link>
                 <Link href="/contact"><div className="py-2 hover:underline cursor-pointer">✉️ {t('contact')}</div></Link>
 
-                {/* 다크모드 토글 */}
                 <div className="flex items-center justify-between py-2">
                   <span className="flex items-center gap-2">🌗 <span>{t('dark_mode')}</span></span>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -126,14 +136,12 @@ function AppLayout({ Component, pageProps }) {
                   </label>
                 </div>
 
-                {/* 로그인 / 로그아웃 */}
                 {user ? (
                   <div onClick={handleLogout} className="py-2 text-red-500 hover:underline cursor-pointer">🚪 {t('logout')}</div>
                 ) : (
                   <Link href="/login"><div className="py-2 text-blue-500 hover:underline cursor-pointer">🔑 {t('login')}</div></Link>
                 )}
 
-                {/* 설정 */}
                 <div className="pt-2 mt-2 border-t border-gray-300">
                   <button onClick={() => setSettingsOpen(p => !p)} className="w-full text-left hover:underline flex items-center gap-2">
                     ⚙️ {t('settings')}
@@ -142,8 +150,6 @@ function AppLayout({ Component, pageProps }) {
                   {settingsOpen && (
                     <div className="mt-2 ml-4 space-y-2">
                       <Link href="/profile/edit"><div className="hover:underline cursor-pointer">✏️ {t('edit_profile')}</div></Link>
-
-                      {/* 🌐 언어 설정 */}
                       <button onClick={() => setLangOpen(p => !p)} className="flex items-center gap-1 hover:underline">
                         🌐 {t('language')}
                       </button>
@@ -154,8 +160,9 @@ function AppLayout({ Component, pageProps }) {
                             <button
                               key={code}
                               onClick={() => changeLocale(code)}
-                              className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-700
-                                ${router.locale === code ? 'font-semibold text-blue-600' : ''}`}
+                              className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 ${
+                                router.locale === code ? 'font-semibold text-blue-600' : ''
+                              }`}
                             >
                               {label} {router.locale === code && '✓'}
                             </button>
@@ -168,42 +175,47 @@ function AppLayout({ Component, pageProps }) {
               </div>
             )}
           </div>
-        </header>
+        </div>
+      </header>
 
-        <main className="flex-1 px-3 sm:px-6">
-          <Component {...pageProps} />
-        </main>
-
-        {/* ───────── 푸터 ───────── */}
-        <footer className="w-full py-4 px-3 sm:px-6 text-center text-xs sm:text-sm bg-[var(--footer-bg)]">
-          © {new Date().getFullYear()} WackyFoki ·{' '}
-          <Link href="/terms" className="underline ml-1">{t('terms')}</Link> ·{' '}
-          <Link href="/privacy" className="underline ml-1">{t('privacy')}</Link>
-        </footer>
+      {/* 카테고리 버튼 */}
+      <div className="px-4 sm:px-6 pt-0 mt-0">
+        <CategoryButtons />
       </div>
-    </>
+
+      <main className="flex-1 px-3 sm:px-6">
+        <Component {...pageProps} />
+      </main>
+
+      <footer className="w-full py-4 px-3 sm:px-6 text-center text-xs sm:text-sm bg-[var(--footer-bg)]">
+        © {new Date().getFullYear()} WackyFoki ·{' '}
+        <Link href="/terms" className="underline ml-1">{t('terms')}</Link> ·{' '}
+        <Link href="/privacy" className="underline ml-1">{t('privacy')}</Link>
+      </footer>
+    </div>
   );
 }
 
-/* ───────── MyApp + provider ───────── */
 function MyApp({ Component, pageProps }) {
   return (
     <UserProvider>
-      <AppLayout Component={Component} pageProps={pageProps} />
+      <SearchProvider>
+        <CategoryProvider>
+          <InnerLayout Component={Component} pageProps={pageProps} />
+        </CategoryProvider>
+      </SearchProvider>
     </UserProvider>
   );
 }
 
-/* 서버에서만 번역 JSON 동적 import → fs 모듈 오류 방지 */
 MyApp.getInitialProps = async (appCtx) => {
-  const App      = (await import('next/app')).default;
+  const App = (await import('next/app')).default;
   const appProps = await App.getInitialProps(appCtx);
-  const locale   = appCtx.ctx.locale || 'ko';
+  const locale = appCtx.ctx.locale || 'ko';
 
   let i18nProps = {};
   if (typeof window === 'undefined') {
-    const { serverSideTranslations } =
-      await import('next-i18next/serverSideTranslations');
+    const { serverSideTranslations } = await import('next-i18next/serverSideTranslations');
     i18nProps = await serverSideTranslations(locale, ['common']);
   }
 
