@@ -18,24 +18,26 @@ export default function CategoryButtons() {
   ];
 
   return (
-    <div className="flex flex-wrap justify-center gap-2 px-2 mt-2 mb-1">
-      {categories.map((cat) => {
-        const isSelected = category === cat.value;
+    <div className="overflow-x-auto no-scrollbar px-2 mt-2 mb-1">
+      <div className="flex gap-2 w-max">
+        {categories.map((cat) => {
+          const isSelected = category === cat.value;
 
-        return (
-          <button
-            key={cat.value || 'all'}
-            onClick={() => setCategory(cat.value)}
-            className={`px-4 py-1 text-sm rounded-full border whitespace-nowrap transition-colors duration-150 ${
-              isSelected
-                ? 'bg-[var(--foreground)] text-[var(--background)] font-semibold'
-                : 'bg-transparent border-[var(--border-color)] text-[var(--foreground)] hover:bg-[var(--foreground)/10]'
-            }`}
-          >
-            {cat.label}
-          </button>
-        );
-      })}
+          return (
+            <button
+              key={cat.value || 'all'}
+              onClick={() => setCategory(cat.value)}
+              className={`px-4 py-1 text-sm rounded-full border whitespace-nowrap transition-colors duration-150 ${
+                isSelected
+                  ? 'bg-[var(--foreground)] text-[var(--background)] font-semibold'
+                  : 'bg-transparent border-[var(--border-color)] text-[var(--foreground)] hover:bg-[var(--foreground)/10]'
+              }`}
+            >
+              {cat.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
