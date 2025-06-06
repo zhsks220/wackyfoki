@@ -27,7 +27,6 @@ function InnerLayout({ Component, pageProps }) {
   const { t } = useTranslation('common');
   const router = useRouter();
   const { setKeyword, setSearchCategory } = useSearch();
-
   const [darkMode, setDarkMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -81,30 +80,32 @@ function InnerLayout({ Component, pageProps }) {
         <link rel="icon" href="/포키.png" />
       </Head>
 
-      <header className="w-full px-4 sm:px-6 pt-4 pb-4 flex items-center justify-between relative z-40 gap-2">
-        {/* 로고 */}
-        <Link href="/" className="flex items-center gap-2 shrink-0">
-          <img src="/포키.png" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
-          <span className="font-bold text-base sm:text-lg">
-            WACKY <span className="font-light">FOKI</span>
-          </span>
-        </Link>
+      {/* ✅ 통합 상단바 */}
+      <header className="w-full px-3 sm:px-6 py-3 flex flex-col gap-2 bg-[var(--background)] z-40 shadow-sm">
+        {/* 🔹 상단 로고 + 검색 + 메뉴 */}
+        <div className="flex items-center justify-between gap-3">
+          {/* 로고 */}
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <img src="/포키.png" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
+            <span className="font-bold text-base sm:text-lg">
+              WACKY <span className="font-light">FOKI</span>
+            </span>
+          </Link>
 
-        {/* 검색창 (모바일: 로고와 프로필 사이 / PC: 중앙 고정) */}
-        <div className="flex-1 mx-2 sm:absolute sm:left-1/2 sm:-translate-x-1/2 sm:mx-0" style={{ maxWidth: '100%', width: '100%' }}>
-          <div className="w-full max-w-[20rem] sm:max-w-[44.5rem] mx-auto">
-            <StickySearchBar
-              onSearch={({ keyword, category }) => {
-                setKeyword(keyword);
-                setSearchCategory(category);
-              }}
-            />
+          {/* 검색창 */}
+          <div className="flex-1 min-w-0">
+            <div className="max-w-full sm:max-w-[44rem] mx-auto">
+              <StickySearchBar
+                onSearch={({ keyword, category }) => {
+                  setKeyword(keyword);
+                  setSearchCategory(category);
+                }}
+              />
+            </div>
           </div>
-        </div>
 
-        {/* 프로필 및 드롭다운 */}
-        <div className="flex items-center gap-4 shrink-0">
-          <div className="relative" ref={dropdownRef}>
+          {/* 프로필 */}
+          <div className="shrink-0 relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(p => !p)}
               className="w-10 h-10 rounded-full overflow-hidden border bg-white"
@@ -176,17 +177,21 @@ function InnerLayout({ Component, pageProps }) {
             )}
           </div>
         </div>
+
+        {/* 🔹 카테고리 버튼 (검색창 아래) */}
+        <div className="overflow-x-auto no-scrollbar mt-2">
+          <div className="flex gap-2 w-max justify-center mx-auto">
+            <CategoryButtons />
+          </div>
+        </div>
       </header>
 
-      {/* 카테고리 버튼 */}
-      <div className="px-4 sm:px-6 pt-0 mt-0">
-        <CategoryButtons />
-      </div>
-
+      {/* ✅ 메인 콘텐츠 */}
       <main className="flex-1 px-3 sm:px-6">
         <Component {...pageProps} />
       </main>
 
+      {/* ✅ 하단 푸터 */}
       <footer className="w-full py-4 px-3 sm:px-6 text-center text-xs sm:text-sm bg-[var(--footer-bg)]">
         © {new Date().getFullYear()} WackyFoki ·{' '}
         <Link href="/terms" className="underline ml-1">{t('terms')}</Link> ·{' '}
