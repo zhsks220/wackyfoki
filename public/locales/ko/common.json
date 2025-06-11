@@ -67,23 +67,27 @@
   "no_my_feed": "아직 올린 피드가 없습니다.",
   "no_liked_feed": "좋아요한 피드가 없습니다.",
   "no_my_comments": "작성한 댓글이 없습니다.",
-  "about_title": "About - WackyFoki",
+ 
   "about_meta": "WackyFoki는 전 세계의 기묘하고 독특한 레시피를 공유하는 플랫폼입니다.",
   "about_heading": "WackyFoki란?",
   "about_p1": "WackyFoki는 전 세계 사람들이 즐기는 기묘하고 독특한 레시피를 공유하는 커뮤니티 기반 플랫폼입니다. 우리는 전통적인 맛의 경계를 넘나드는 창의적이고 엉뚱한 음식들을 기록하고, 즐겁게 나누는 공간을 지향합니다.",
   "about_p2": "누구나 쉽게 레시피를 업로드하고, 다른 사람들의 작품을 감상하고, 댓글과 좋아요로 반응을 남길 수 있습니다. 음식의 모양이 이상하다고 해서 맛도 이상한 건 아니니까요!",
   "about_p3": "재미와 창의력을 바탕으로, 음식에 대한 새로운 시선을 나누고 싶은 분들께 열린 공간입니다. WackyFoki는 그런 순간들을 환영합니다.",
+
+  "about_p4": "이 플랫폼은 요리에 관심 있는 누구나 사용할 수 있도록 설계되었습니다. 전문 셰프부터 요리에 막 입문한 초보자, 그리고 단순히 특이한 음식에 호기심을 가진 일반 사용자들까지 모두가 자유롭게 참여할 수 있습니다.",
+
+  "about_p5": "우리는 실험적이거나 일반적이지 않은 조리법, 때로는 엉뚱하고 웃긴 레시피까지 모두 소중한 창의성의 표현이라 생각합니다. 이런 요리들은 단순한 식사가 아닌 이야기의 한 조각이 되며, 사람들과의 연결고리가 됩니다.",
+
+  "about_p6": "WackyFoki는 단순한 레시피 공유 사이트를 넘어, 전 세계의 독특한 음식 문화를 발견하고, 기록하며, 함께 웃고 이야기할 수 있는 '디지털 음식 놀이터'를 꿈꿉니다.",
+
+  "about_p7": "사용자 여러분의 피드백은 이 플랫폼을 더욱 가치 있게 만듭니다. 댓글, 좋아요, 피드백 모두가 WackyFoki를 더 따뜻한 공간으로 만들어갑니다. 언제든지 여러분의 특별한 레시피를 들려주세요.",
+
+  "about_p8": "앞으로도 WackyFoki는 음식에 대한 다양한 관점을 존중하며, 상상력과 창의력이 넘치는 커뮤니티를 운영하겠습니다. 우리는 이 작은 실험들이 세계적인 공유로 이어질 수 있다고 믿습니다.",
+
   "about_ops_heading": "운영 정보",
   "about_ops_body": "본 사이트는 개인이 운영하는 프로젝트로, Google AdSense 및 파트너 프로그램을 통해 일부 수익을 얻을 수 있습니다. 게시물의 저작권은 각 작성자에게 있으며, 부적절한 콘텐츠는 사전 경고 없이 삭제될 수 있습니다. 문의:",
   "about_notice": "※ 본 플랫폼은 유저가 직접 작성한 콘텐츠를 기반으로 하며, 관리자는 부적절한 내용에 대해 사전 경고 없이 삭제할 수 있습니다.",
-  "contact_title": "Contact - WackyFoki",
-  "contact_meta": "WackyFoki에 문의하고 싶으신가요? 언제든지 연락 주세요.",
-  "contact_heading": "Contact Us",
-  "contact_p1": "WackyFoki에 대해 궁금한 점이 있으신가요? 제휴 문의, 문제 신고, 피드백은 아래 이메일을 통해 언제든지 연락 주세요.",
-  "contact_email_label": "이메일",
-  "contact_owner_heading": "운영자 정보",
-  "contact_owner_body": "본 사이트는 오리진 (OriJin)이 개인적으로 운영하고 있으며, 현재는 테스트 중인 프로젝트입니다. 모든 문의는 contact@wackyfoki.com 으로 받습니다.",
-  "contact_notice": "※ 회신은 평일 기준 1~2일 이내에 드릴 수 있습니다.",
+
 
   "privacy_title": "개인정보 처리방침",
   "privacy_intro": "WackyFoki(이하 ‘서비스’)는 이용자의 개인정보를 중요시하며, 『개인정보 보호법』을 준수합니다.\n본 방침은 서비스가 이용자의 개인정보를 어떻게 수집, 이용, 보호하는지를 설명합니다.",
@@ -148,5 +152,35 @@
 
   "search_placeholder": "검색",
   "category_all": "전체",
-  "category_experiment": "실험 요리"
+  "category_experiment": "실험 요리",
+
+  
+
+  "contact_heading": "문의하기",
+  "contact_p1": "WackyFoki에 대해 궁금한 점이 있으신가요? 제휴 문의, 문제 신고, 피드백은 아래 이메일을 통해 언제든지 연락 주세요.",
+  "contact_email_label": "이메일",
+  "contact_owner_heading": "운영자 정보",
+  "contact_owner_body": "본 사이트는 오리진 (OriJin)이 개인적으로 운영하고 있으며, 현재는 테스트 중인 프로젝트입니다. 모든 문의는 contact@wackyfoki.com 으로 받습니다.",
+
+  "contact_response_heading": "문의 응답 안내",
+  "contact_response_guide": "보내주신 문의는 보통 48시간 이내에 확인되며, 최대한 빠르게 답변 드리겠습니다. WackyFoki는 모든 이용자의 의견을 소중히 여기며, 개선 제안이나 오류 제보에도 귀 기울입니다.",
+
+  "contact_privacy_heading": "개인정보 보호",
+  "contact_privacy_notice": "문의 시 입력하신 이메일은 오직 응답 목적에만 사용되며, 외부에 절대 공유되지 않습니다. 자세한 내용은 개인정보처리방침을 참고해주세요.",
+
+  "contact_inquiry_heading": "문의 항목 분류",
+  "contact_inquiry_general": "일반 문의: 플랫폼 기능 관련 궁금한 점",
+  "contact_inquiry_ads": "광고/제휴 문의: 협업 및 제휴 관련",
+  "contact_inquiry_report": "콘텐츠 신고: 부적절한 레시피 또는 댓글 제보",
+  "contact_meta": "WackyFoki 문의 페이지입니다. 제휴, 문제 신고, 피드백은 언제든지 환영합니다.",
+  
+  "mypage_title": "마이페이지 - WackyFoki",
+  "contact_title": "문의 - WackyFoki",
+  "about_title": "소개 - WackyFoki",
+  "edit_profile_title": "프로필 수정 - WackyFoki",
+  "settings_title": "설정 - WackyFoki",
+  
+  
+  "loading_more": "로딩 중...",
+  "no_more_recipes": "더 이상 레시피가 없습니다"
 }

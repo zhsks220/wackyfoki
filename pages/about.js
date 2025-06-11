@@ -4,8 +4,6 @@
  * ---------------------------------------------
  * • useTranslation → t('키') 로 모든 문자열 치환
  * • serverSideTranslations 로 번역 JSON preload
- *   (별도 about.json 네임스페이스를 쓰지 않고, 기존 common.json 에
- *   키를 추가해도 무방합니다. 예시는 common 사용)
  * ---------------------------------------------
  */
 import Head from 'next/head';
@@ -28,6 +26,11 @@ export default function AboutPage() {
         <p className="mb-4 text-lg leading-relaxed">{t('about_p1')}</p>
         <p className="mb-4 text-lg leading-relaxed">{t('about_p2')}</p>
         <p className="mb-4 text-lg leading-relaxed">{t('about_p3')}</p>
+        <p className="mb-4 text-lg leading-relaxed">{t('about_p4')}</p>
+        <p className="mb-4 text-lg leading-relaxed">{t('about_p5')}</p>
+        <p className="mb-4 text-lg leading-relaxed">{t('about_p6')}</p>
+        <p className="mb-4 text-lg leading-relaxed">{t('about_p7')}</p>
+        <p className="mb-4 text-lg leading-relaxed">{t('about_p8')}</p>
 
         <h2 className="text-2xl font-semibold mt-10 mb-4">📌 {t('about_ops_heading')}</h2>
         <p className="text-base leading-relaxed">
@@ -46,7 +49,7 @@ export default function AboutPage() {
   );
 }
 
-/* 번역 JSON 선로드 (SSG / ISR) */
+/* 번역 JSON preload (SSG / ISR) */
 export async function getStaticProps({ locale }) {
   return {
     props: {

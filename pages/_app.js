@@ -26,8 +26,9 @@ const LOCALES = [
 function InnerLayout({ Component, pageProps }) {
   const { t } = useTranslation('common');
   const router = useRouter();
-  const { setKeyword, setSearchCategory } = useSearch();
+  const isHome = router.pathname === '/';
 
+  const { setKeyword, setSearchCategory } = useSearch();
   const [darkMode, setDarkMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -36,7 +37,6 @@ function InnerLayout({ Component, pageProps }) {
   const dropdownRef = useRef(null);
   const { user, logout } = useUser();
 
-  // ✅ 다크모드 초기 설정 (localStorage 반영)
   useEffect(() => {
     const stored = localStorage.getItem('darkMode');
     const prefers = stored === null ? matchMedia('(prefers-color-scheme: dark)').matches : stored === 'true';
@@ -53,7 +53,6 @@ function InnerLayout({ Component, pageProps }) {
     });
   };
 
-  // ✅ 언어 변경 시에도 다크모드 유지
   const changeLocale = (loc) => {
     const storedDark = localStorage.getItem('darkMode');
     router.push(router.asPath, undefined, { locale: loc, scroll: false }).then(() => {
@@ -91,6 +90,11 @@ function InnerLayout({ Component, pageProps }) {
         <link rel="icon" href="/포키.png" />
       </Head>
 
+      {/* ✅ 왼쪽 고정 광고 박스 (top 위치 조정됨) */}
+      <div className="hidden lg:block fixed left-0 top-44 z-40 w-[160px] h-[600px] bg-gray-100 border border-gray-300 rounded shadow-md flex items-center justify-center">
+        광고 자리
+      </div>
+
       <header className="w-full px-3 sm:px-6 py-3 flex flex-col gap-2 bg-[var(--background)] z-40 shadow-sm">
         <div className="flex items-center justify-between gap-3 relative">
           <Link href="/" className="flex items-center gap-2 shrink-0 z-10">
@@ -100,16 +104,18 @@ function InnerLayout({ Component, pageProps }) {
             </span>
           </Link>
 
-          <div className="hidden sm:flex absolute left-0 right-0 justify-center">
-            <div className="w-full max-w-[44rem] px-3">
-              <StickySearchBar
-                onSearch={({ keyword, category }) => {
-                  setKeyword(keyword);
-                  setSearchCategory(category);
-                }}
-              />
+          {isHome && (
+            <div className="hidden sm:flex absolute left-0 right-0 justify-center">
+              <div className="w-full max-w-[44rem] px-3">
+                <StickySearchBar
+                  onSearch={({ keyword, category }) => {
+                    setKeyword(keyword);
+                    setSearchCategory(category);
+                  }}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="shrink-0 relative z-10" ref={dropdownRef}>
             <button
@@ -167,7 +173,9 @@ function InnerLayout({ Component, pageProps }) {
                             <button
                               key={code}
                               onClick={() => changeLocale(code)}
-                              className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 ${router.locale === code ? 'font-semibold text-blue-600' : ''}`}
+                              className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 ${
+                                router.locale === code ? 'font-semibold text-blue-600' : ''
+                              }`}
                             >
                               {label} {router.locale === code && '✓'}
                             </button>
@@ -182,25 +190,36 @@ function InnerLayout({ Component, pageProps }) {
           </div>
         </div>
 
-        <div className="sm:hidden mt-2">
-          <StickySearchBar
-            onSearch={({ keyword, category }) => {
-              setKeyword(keyword);
-              setSearchCategory(category);
-            }}
-          />
-        </div>
+        {isHome && (
+          <>
+            <div className="sm:hidden mt-2">
+              <StickySearchBar
+                onSearch={({ keyword, category }) => {
+                  setKeyword(keyword);
+                  setSearchCategory(category);
+                }}
+              />
+            </div>
 
-        <div className="overflow-x-auto no-scrollbar mt-2">
-          <div className="flex gap-2 w-max justify-center mx-auto">
-            <CategoryButtons />
-          </div>
-        </div>
+            <div className="overflow-x-auto no-scrollbar mt-2">
+              <div className="flex gap-2 w-max justify-center mx-auto">
+                <CategoryButtons />
+              </div>
+            </div>
+          </>
+        )}
       </header>
 
       <main className="flex-1 px-3 sm:px-6">
         <Component {...pageProps} />
       </main>
+
+      {/* ✅ 푸터 위 광고 박스 */}
+      <div className="w-full flex justify-center py-8">
+        <div className="w-full max-w-[728px] h-[90px] bg-gray-200 rounded shadow-sm flex items-center justify-center">
+          하단 광고 자리
+        </div>
+      </div>
 
       <footer className="w-full py-4 px-3 sm:px-6 text-center text-xs sm:text-sm bg-[var(--footer-bg)]">
         © {new Date().getFullYear()} WackyFoki ·{' '}
