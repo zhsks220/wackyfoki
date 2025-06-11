@@ -87,7 +87,7 @@ function InnerLayout({ Component, pageProps }) {
       <Head>
         <title>WackyFoki</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/포키.png" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       {/* ✅ 왼쪽 고정 광고 박스 (top 위치 조정됨) */}
@@ -98,7 +98,7 @@ function InnerLayout({ Component, pageProps }) {
       <header className="w-full px-3 sm:px-6 py-3 flex flex-col gap-2 bg-[var(--background)] z-40 shadow-sm">
         <div className="flex items-center justify-between gap-3 relative">
           <Link href="/" className="flex items-center gap-2 shrink-0 z-10">
-            <img src="/포키.png" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
+            <img src="/favicon.ico" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
             <span className="font-bold text-base sm:text-lg">
               WACKY <span className="font-light">FOKI</span>
             </span>
