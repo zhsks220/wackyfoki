@@ -35,7 +35,23 @@ function InnerLayout({ Component, pageProps }) {
   const [langOpen, setLangOpen] = useState(false);
 
   const dropdownRef = useRef(null);
-  const { user, logout } = useUser();
+  const { user, logout, isLoading } = useUser();
+
+  // ✅ 닉네임 없으면 /profile/edit 강제 이동
+  useEffect(() => {
+    if (isLoading) return;
+
+    const noNickname =
+      user &&
+      user.agreed === true &&
+      (!user.displayName || user.displayName.trim() === '');
+
+    const notEditPage = router.pathname !== '/profile/edit';
+
+    if (noNickname && notEditPage) {
+      router.replace('/profile/edit');
+    }
+  }, [user, isLoading, router]);
 
   useEffect(() => {
     const stored = localStorage.getItem('darkMode');
@@ -136,7 +152,7 @@ function InnerLayout({ Component, pageProps }) {
 
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-64 rounded shadow p-4 z-50 bg-[var(--header-bg)]">
-                {user && <div className="font-semibold mb-2">{user.displayName}</div>}
+                {user && <div className="font-semibold mb-2">{user.displayName || user.email}</div>}
                 <Link href="/mypage"><div className="py-2 hover:underline cursor-pointer">📄 {t('mypage')}</div></Link>
                 <Link href="/about"><div className="py-2 hover:underline cursor-pointer">📄 {t('about')}</div></Link>
                 <Link href="/contact"><div className="py-2 hover:underline cursor-pointer">✉️ {t('contact')}</div></Link>

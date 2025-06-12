@@ -45,8 +45,23 @@ export default function HomePage() {
   const fetchTopComment = async (recipeId) => {
     const ref = collection(db, 'recipes', recipeId, 'comments');
     const snap = await getDocs(query(ref, orderBy('likes', 'desc')));
-    const top = snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
-    setTopComments(p => ({ ...p, [recipeId]: top }));
+    if (snap.empty) {
+      setTopComments(p => ({ ...p, [recipeId]: null }));
+      return;
+    }
+
+    const top = { id: snap.docs[0].id, ...snap.docs[0].data() };
+
+    let displayName = top.author || t('anonymous');
+    if (top.uid) {
+      const userSnap = await getDoc(doc(db, 'users', top.uid));
+      if (userSnap.exists()) {
+        const uData = userSnap.data();
+        displayName = uData.displayName || displayName;
+      }
+    }
+
+    setTopComments(p => ({ ...p, [recipeId]: { ...top, displayName } }));
   };
 
   const fetchRecipes = async (initial = false) => {
@@ -165,6 +180,7 @@ export default function HomePage() {
 
   return (
     <div className="p-8 max-w-3xl mx-auto bg-[var(--background)] text-[var(--foreground)]">
+      {/* 업로드 영역 */}
       <div className="bg-[var(--card-bg)] p-4 rounded-xl shadow mb-6">
         <div className="flex items-center gap-3 mb-4">
           <img src={user?.profileImage || user?.photoURL || '/default-avatar.png'} alt="profile" className="w-10 h-10 rounded-full object-cover" />
@@ -231,7 +247,7 @@ export default function HomePage() {
                 <div className="mt-6 pt-4 border-t border-[var(--border-color)]">
                   {top && (
                     <div className="mb-3 text-sm bg-[var(--card-bg)] p-2 rounded">
-                      💬 <strong>{top.author}</strong>: {top.content}
+                      💬 <strong>{top.displayName}</strong>: {top.content}
                     </div>
                   )}
                   {user ? (

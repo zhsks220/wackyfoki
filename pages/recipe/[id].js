@@ -10,7 +10,8 @@ import {
 import { db } from '../../firebase/config';
 import { useUser } from '@/contexts/UserContext';
 import { FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa';
-import LikeButton from '@/components/LikeButton'; // ✅ 좋아요 버튼 추가
+import LikeButton from '@/components/LikeButton';
+import { useTranslation } from 'next-i18next';
 
 function StarRow({ value = 0 }) {
   const v = Number(value) || 0;
@@ -44,6 +45,7 @@ export default function RecipeDetailPage() {
   const router = useRouter();
   const { id } = router.query;
   const { user } = useUser();
+  const { t } = useTranslation('common');
 
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -62,7 +64,7 @@ export default function RecipeDetailPage() {
 
       if (docSnap.exists()) {
         const data = docSnap.data();
-        let authorName = data.authorName || '익명';
+        let authorName = data.authorName || t('anonymous');
         let authorImage = data.authorImage || '/default-avatar.png';
 
         if (data.uid) {
@@ -84,12 +86,12 @@ export default function RecipeDetailPage() {
         setRecipe(null);
       }
     } catch (err) {
-      console.error('레시피 로딩 실패:', err);
+      console.error(t('load_error'), err);
       setRecipe(null);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   const fetchComments = useCallback(async () => {
     if (!id) return;
@@ -114,14 +116,14 @@ export default function RecipeDetailPage() {
   }, []);
 
   const handleDelete = async () => {
-    if (!window.confirm('정말 삭제하시겠습니까?')) return;
+    if (!window.confirm(t('confirm_delete'))) return;
     try {
       await deleteDoc(doc(db, 'recipes', recipe.id));
-      alert('레시피가 삭제되었습니다.');
+      alert(t('alert_deleted'));
       router.push('/');
     } catch (err) {
-      console.error('삭제 중 오류:', err);
-      alert('삭제 중 오류가 발생했습니다.');
+      console.error(t('delete_error'), err);
+      alert(t('alert_delete_error'));
     }
   };
 
@@ -150,8 +152,8 @@ export default function RecipeDetailPage() {
 
   const isAuthor = user?.uid === recipe?.uid;
 
-  if (loading) return <p style={{ padding: '2rem' }}>⏳ 로딩 중...</p>;
-  if (!recipe) return <p style={{ padding: '2rem' }}>😢 레시피를 찾을 수 없습니다.</p>;
+  if (loading) return <p style={{ padding: '2rem' }}>⏳ {t('loading')}</p>;
+  if (!recipe) return <p style={{ padding: '2rem' }}>😢 {t('not_found')}</p>;
 
   return (
     <>
@@ -176,8 +178,8 @@ export default function RecipeDetailPage() {
                   overflow: 'hidden',
                   zIndex: 9999
                 }}>
-                  <button onClick={handleEdit} style={menuStyle}><span>✏</span><span>수정</span></button>
-                  <button onClick={handleDelete} style={menuStyle}><span>🗑</span><span>삭제</span></button>
+                  <button onClick={handleEdit} style={menuStyle}><span>✏</span><span>{t('edit')}</span></button>
+                  <button onClick={handleDelete} style={menuStyle}><span>🗑</span><span>{t('delete')}</span></button>
                 </div>
               )}
             </div>
@@ -203,30 +205,30 @@ export default function RecipeDetailPage() {
 
         {/* 준비물 */}
         <div style={{ whiteSpace: 'pre-line' }}>
-          <strong>준비물:</strong><br />
-          {recipe.ingredients || '입력되지 않음'}
+          <strong>{t('prepare_items')}:</strong><br />
+          {recipe.ingredients || t('not_entered')}
         </div>
 
         <hr style={{ borderColor: '#444', margin: '1.5rem 0' }} />
 
         {/* 조리 과정 */}
         <div style={{ whiteSpace: 'pre-line' }}>
-          <strong>조리과정:</strong><br />
-          {recipe.description || '입력되지 않음'}
+          <strong>{t('description')}:</strong><br />
+          {recipe.description || t('not_entered')}
         </div>
 
         <hr style={{ borderColor: '#444', margin: '1.5rem 0' }} />
 
         {/* 조리 시간, 별점 */}
-        <p><strong>조리 시간:</strong> {recipe.cookTime || '미입력'}분</p>
+        <p><strong>{t('cook_time')}:</strong> {recipe.cookTime || t('not_entered')}분</p>
 
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', marginTop: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ color: '#aaa' }}>난이도</span>
+            <span style={{ color: '#aaa' }}>{t('difficulty')}</span>
             <StarRow value={recipe.difficulty ?? 0} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ color: '#aaa' }}>맛</span>
+            <span style={{ color: '#aaa' }}>{t('taste')}</span>
             <StarRow value={recipe.taste ?? 0} />
           </div>
         </div>
@@ -264,25 +266,29 @@ export default function RecipeDetailPage() {
         </div>
 
         {/* 댓글 */}
-        <h3 style={{ marginTop: '2rem' }}>💬 전체 댓글</h3>
+        <h3 style={{ marginTop: '2rem' }}>💬 {t('see_all_comments')}</h3>
         {user ? (
           <div style={{ marginBottom: '1.5rem' }}>
-            <textarea value={newComment} onChange={e => setNewComment(e.target.value)}
-              rows={3} placeholder="댓글을 입력하세요"
-              style={{ width: '100%', padding: '0.5rem', borderRadius: 6 }} />
+            <textarea
+              value={newComment}
+              onChange={e => setNewComment(e.target.value)}
+              rows={3}
+              placeholder={t('comment_placeholder')}
+              style={{ width: '100%', padding: '0.5rem', borderRadius: 6 }}
+            />
             <button onClick={handleCommentSubmit} style={{
               marginTop: '0.5rem', backgroundColor: '#222', color: '#fff',
               border: 'none', padding: '0.4rem 0.8rem', borderRadius: 4, cursor: 'pointer'
-            }}>등록</button>
+            }}>{t('submit')}</button>
           </div>
-        ) : <p>로그인 후 댓글을 작성할 수 있습니다.</p>}
+        ) : <p>{t('login_required_comment')}</p>}
 
         {comments.length > 0 ? comments.map(comment => (
           <div key={comment.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid #333' }}>
             <strong>{comment.author}</strong>
             <p style={{ marginTop: '0.25rem' }}>{comment.content}</p>
           </div>
-        )) : <p>댓글이 아직 없습니다.</p>}
+        )) : <p>{t('no_comments')}</p>}
       </div>
     </>
   );

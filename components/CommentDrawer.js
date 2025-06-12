@@ -1,10 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { onSnapshot, collection, query, orderBy } from 'firebase/firestore';
+import {
+  onSnapshot,
+  collection,
+  query,
+  orderBy,
+  doc,
+  getDoc
+} from 'firebase/firestore';
 import { db } from '../firebase/config';
 import LikeButton from './LikeButton';
-
 import { useTranslation } from 'next-i18next';
 
 export default function CommentDrawer({
@@ -16,6 +22,7 @@ export default function CommentDrawer({
 }) {
   const { t } = useTranslation('common');
   const [comments, setComments] = useState([]);
+  const [nicknames, setNicknames] = useState({}); // ✅ uid → 닉네임 캐시
 
   /* ───────── 실시간 댓글 스트림 ───────── */
   useEffect(() => {
@@ -26,12 +33,31 @@ export default function CommentDrawer({
       orderBy('createdAt', 'asc')
     );
 
-    const unsubscribe = onSnapshot(q, (snap) => {
-      setComments(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    const unsubscribe = onSnapshot(q, async (snap) => {
+      const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setComments(docs);
+
+      // ✅ uid 중복 제거 후 닉네임 요청
+      const uniqueUids = [...new Set(docs.map((d) => d.uid))];
+
+      const nicknameMap = {};
+      await Promise.all(
+        uniqueUids.map(async (uid) => {
+          if (!uid) return;
+          const userRef = doc(db, 'users', uid);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            nicknameMap[uid] = userSnap.data().displayName || t('anonymous');
+          } else {
+            nicknameMap[uid] = t('anonymous');
+          }
+        })
+      );
+      setNicknames(nicknameMap);
     });
 
     return () => unsubscribe();
-  }, [recipeId, open]);
+  }, [recipeId, open, t]);
 
   if (!open) return null;
 
@@ -60,8 +86,8 @@ export default function CommentDrawer({
         <p style={{ color: 'var(--border-color)' }}>{t('no_comment')}</p>
       ) : (
         comments.map((c) => {
-          const isAuthor     = user && c.uid === user.uid;
-          const displayName  = c.displayName || c.author || t('anonymous');
+          const isAuthor = user && c.uid === user.uid;
+          const displayName = nicknames[c.uid] || t('anonymous');
 
           return (
             <div
@@ -73,16 +99,14 @@ export default function CommentDrawer({
                 <p className="font-semibold text-sm">{displayName}</p>
                 <p className="text-sm mb-1 whitespace-pre-wrap">{c.content}</p>
 
-                {/* 좋아요 버튼 */}
                 <LikeButton
                   path={`recipes/${recipeId}/comments/${c.id}`}
                   uid={user?.uid}
                   likedBy={c.likedBy || []}
-                  likes={c.likes  || 0}
+                  likes={c.likes || 0}
                 />
               </div>
 
-              {/* 작성자에게만 삭제 버튼 */}
               {isAuthor && (
                 <button
                   onClick={() => onDelete(recipeId, c.id)}

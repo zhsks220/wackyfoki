@@ -3,8 +3,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { db, storage, auth } from '@/firebase/config';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import {
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from 'firebase/firestore';
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+} from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import { useUser } from '@/contexts/UserContext';
 import Image from 'next/image';
@@ -20,6 +32,7 @@ export default function EditProfile() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState('');
   const [loading, setLoading] = useState(false);
+  const [originalNickname, setOriginalNickname] = useState('');
 
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -36,6 +49,7 @@ export default function EditProfile() {
       if (snap.exists()) {
         const data = snap.data();
         setNickname(data.displayName || '');
+        setOriginalNickname(data.displayName || '');
         setPreview(data.profileImage || '');
       }
     };
@@ -78,9 +92,37 @@ export default function EditProfile() {
     setShowCropModal(false);
   };
 
+  const isValidNickname = (name) => {
+    if (name.length < 3 || name.length > 15) return false;
+    const regex = /^[a-zA-Z0-9](?!.*[_.]{2})[a-zA-Z0-9._]{1,13}[a-zA-Z0-9]$/;
+    return regex.test(name);
+  };
+
+  const isNicknameTaken = async (nickname) => {
+    const q = query(
+      collection(db, 'users'),
+      where('displayName', '==', nickname)
+    );
+    const snapshot = await getDocs(q);
+    return !snapshot.empty;
+  };
+
   const handleSave = async () => {
     if (!user) return;
     setLoading(true);
+
+    if (!isValidNickname(nickname)) {
+      alert(t('alert_invalid_nickname'));
+      setLoading(false);
+      return;
+    }
+
+    const taken = await isNicknameTaken(nickname);
+    if (taken && nickname !== originalNickname) {
+      alert(t('alert_duplicate_nickname'));
+      setLoading(false);
+      return;
+    }
 
     let imageUrl = preview;
 
@@ -128,6 +170,8 @@ export default function EditProfile() {
           type="text"
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
+          placeholder={t('edit_profile_placeholder')}
+          maxLength={15}
           className="w-full border rounded px-3 py-2 bg-white text-black"
         />
       </div>
@@ -137,7 +181,7 @@ export default function EditProfile() {
         {preview && (
           <Image
             src={preview}
-            alt="미리보기"
+            alt={t('preview')}
             width={100}
             height={100}
             className="rounded-full object-cover mb-2"
