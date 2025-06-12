@@ -227,5 +227,6 @@
   "delete_error": "삭제 실패",
   "load_error": "레시피 로딩 실패",
   "source": "출처",
-  "youtube_link": "YouTube 영상 보기"
+  "youtube_link": "YouTube 영상 보기",
+  "cook_time_full": "{{count}}분 소요"
 }

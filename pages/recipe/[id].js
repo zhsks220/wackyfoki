@@ -214,7 +214,11 @@ export default function RecipeDetailPage() {
 
         <hr style={{ borderColor: '#444', margin: '1.5rem 0' }} />
 
-        <p><strong>{t('cook_time')}:</strong> {recipe.cookTime || t('not_entered')}분</p>
+        {recipe.cookTime ? (
+          <p>🕒 {t('cook_time_full', { count: recipe.cookTime })}</p>
+        ) : (
+          <p>🕒 {t('not_entered')}</p>
+        )}
 
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', marginTop: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

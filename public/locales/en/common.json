@@ -165,5 +165,6 @@
   "delete_error": "Delete failed",
   "load_error": "Failed to load recipe",
   "source": "Source",
-  "youtube_link": "Watch on YouTube"
+  "youtube_link": "Watch on YouTube",
+  "cook_time_full": "{{count}} min(s)"
 }

@@ -165,6 +165,7 @@
   "delete_error": "削除に失敗しました",
   "load_error": "レシピの読み込みに失敗しました",
   "source": "出典",
-  "youtube_link": "YouTubeで見る"
+  "youtube_link": "YouTubeで見る",
+  "cook_time_full": "{{count}}分かかります"
 
 }

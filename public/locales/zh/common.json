@@ -165,6 +165,7 @@
   "delete_error": "删除失败",
   "load_error": "加载食谱失败",
   "source": "来源",
-  "youtube_link": "在YouTube上观看"
+  "youtube_link": "在YouTube上观看",
+  "cook_time_full": "需要{{count}}分钟"
 
 }

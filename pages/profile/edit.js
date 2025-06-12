@@ -4,18 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { db, storage, auth } from '@/firebase/config';
 import {
-  doc,
-  getDoc,
-  setDoc,
-  collection,
-  query,
-  where,
-  getDocs,
+  doc, getDoc, setDoc, collection, query, where, getDocs,
 } from 'firebase/firestore';
 import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
+  ref, uploadBytes, getDownloadURL,
 } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import { useUser } from '@/contexts/UserContext';
@@ -28,6 +20,7 @@ export default function EditProfile() {
   const { t } = useTranslation('common');
   const { user, refreshUser } = useUser();
   const router = useRouter();
+
   const [nickname, setNickname] = useState('');
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState('');
@@ -88,7 +81,7 @@ export default function EditProfile() {
   const handleCropDone = async () => {
     const croppedBlob = await getCroppedImg(image, croppedAreaPixels);
     setPreview(URL.createObjectURL(croppedBlob));
-    setImage(croppedBlob);
+    setImage(croppedBlob); // Blob으로 저장
     setShowCropModal(false);
   };
 
@@ -128,8 +121,15 @@ export default function EditProfile() {
 
     try {
       if (image) {
-        const storageRef = ref(storage, `${user.uid}-${Date.now()}`);
-        await uploadBytes(storageRef, image);
+        const fileName = `${user.uid}-${Date.now()}.webp`;
+        const storageRef = ref(storage, fileName);
+
+        const fileToUpload =
+          image instanceof File
+            ? image
+            : new File([image], fileName, { type: image.type || 'image/webp' });
+
+        await uploadBytes(storageRef, fileToUpload);
         imageUrl = await getDownloadURL(storageRef);
       }
 
@@ -143,7 +143,9 @@ export default function EditProfile() {
       }
 
       if (auth.currentUser && safeData.displayName) {
-        await updateProfile(auth.currentUser, { displayName: safeData.displayName });
+        await updateProfile(auth.currentUser, {
+          displayName: safeData.displayName,
+        });
         await auth.currentUser.reload();
         await refreshUser();
       }

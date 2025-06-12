@@ -129,8 +129,7 @@ export default function RecipeCard({ recipe }) {
 
       {minutes !== '' && (
         <div className="text-sm" style={{ color: 'var(--border-color)' }}>
-          🕒 {minutes}
-          {t('cook_time')}
+          🕒 {t('cook_time_full', { count: minutes })}
         </div>
       )}
 
@@ -146,7 +145,6 @@ export default function RecipeCard({ recipe }) {
             />
           </div>
 
-          {/* ✅ 출처 문구 추가 */}
           <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             📌 {t('source')}:{" "}
             <a
