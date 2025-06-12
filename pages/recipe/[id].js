@@ -57,16 +57,13 @@ export default function RecipeDetailPage() {
   const fetchRecipe = useCallback(async () => {
     if (!id) return;
     setLoading(true);
-
     try {
       const docRef = doc(db, 'recipes', id);
       const docSnap = await getDoc(docRef);
-
       if (docSnap.exists()) {
         const data = docSnap.data();
         let authorName = data.authorName || t('anonymous');
         let authorImage = data.authorImage || '/default-avatar.png';
-
         if (data.uid) {
           const userSnap = await getDoc(doc(db, 'users', data.uid));
           if (userSnap.exists()) {
@@ -75,13 +72,7 @@ export default function RecipeDetailPage() {
             authorImage = udata.profileImage || authorImage;
           }
         }
-
-        setRecipe({
-          id: docSnap.id,
-          ...data,
-          authorName,
-          authorImage,
-        });
+        setRecipe({ id: docSnap.id, ...data, authorName, authorImage });
       } else {
         setRecipe(null);
       }
@@ -93,12 +84,26 @@ export default function RecipeDetailPage() {
     }
   }, [id, t]);
 
+  // ✅ 댓글 닉네임 실시간 반영
   const fetchComments = useCallback(async () => {
     if (!id) return;
     const snap = await getDocs(collection(db, 'recipes', id, 'comments'));
-    const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const list = await Promise.all(
+      snap.docs.map(async (docSnap) => {
+        const data = docSnap.data();
+        let displayName = t('anonymous');
+        if (data.uid) {
+          const userSnap = await getDoc(doc(db, 'users', data.uid));
+          if (userSnap.exists()) {
+            const udata = userSnap.data();
+            displayName = udata.displayName || t('anonymous');
+          }
+        }
+        return { id: docSnap.id, ...data, displayName };
+      })
+    );
     setComments(list.sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds));
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     fetchRecipe();
@@ -136,7 +141,6 @@ export default function RecipeDetailPage() {
     try {
       const commentRef = collection(db, 'recipes', id, 'comments');
       await addDoc(commentRef, {
-        author: user.displayName || user.email,
         uid: user.uid,
         content: newComment.trim(),
         likes: 0,
@@ -155,18 +159,17 @@ export default function RecipeDetailPage() {
   if (loading) return <p style={{ padding: '2rem' }}>⏳ {t('loading')}</p>;
   if (!recipe) return <p style={{ padding: '2rem' }}>😢 {t('not_found')}</p>;
 
+  const youtubeId = extractYouTubeId(recipe.youtubeUrl);
+
   return (
     <>
       <Head><title>{recipe.title} - WackyFoki</title></Head>
       <div style={{ padding: '2rem', maxWidth: 800, margin: '0 auto' }}>
-        {/* 제목 + 수정/삭제 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>{recipe.title}</h1>
           {isAuthor && (
             <div ref={dropdownRef} style={{ position: 'relative' }}>
-              <button onClick={() => setDropdownOpen(!dropdownOpen)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#999' }}>
-                ⋯
-              </button>
+              <button onClick={() => setDropdownOpen(!dropdownOpen)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#999' }}>⋯</button>
               {dropdownOpen && (
                 <div style={{
                   position: 'absolute',
@@ -186,24 +189,17 @@ export default function RecipeDetailPage() {
           )}
         </div>
 
-        {/* 작성자 정보 */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <img src={recipe.authorImage} alt={recipe.authorName} style={{
-            width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', marginRight: 10,
-          }} />
+          <img src={recipe.authorImage} alt={recipe.authorName} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', marginRight: 10 }} />
           <span style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>{recipe.authorName}</span>
         </div>
 
-        {/* 이미지 */}
         {recipe.imageUrl && (
-          <img src={recipe.imageUrl} alt={recipe.title} style={{
-            width: '100%', borderRadius: 8, marginBottom: '1rem', backgroundColor: '#222'
-          }} />
+          <img src={recipe.imageUrl} alt={recipe.title} style={{ width: '100%', borderRadius: 8, marginBottom: '1rem', backgroundColor: '#222' }} />
         )}
 
         <hr style={{ borderColor: '#444', margin: '1.5rem 0' }} />
 
-        {/* 준비물 */}
         <div style={{ whiteSpace: 'pre-line' }}>
           <strong>{t('prepare_items')}:</strong><br />
           {recipe.ingredients || t('not_entered')}
@@ -211,7 +207,6 @@ export default function RecipeDetailPage() {
 
         <hr style={{ borderColor: '#444', margin: '1.5rem 0' }} />
 
-        {/* 조리 과정 */}
         <div style={{ whiteSpace: 'pre-line' }}>
           <strong>{t('description')}:</strong><br />
           {recipe.description || t('not_entered')}
@@ -219,7 +214,6 @@ export default function RecipeDetailPage() {
 
         <hr style={{ borderColor: '#444', margin: '1.5rem 0' }} />
 
-        {/* 조리 시간, 별점 */}
         <p><strong>{t('cook_time')}:</strong> {recipe.cookTime || t('not_entered')}분</p>
 
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', marginTop: '1rem' }}>
@@ -233,28 +227,34 @@ export default function RecipeDetailPage() {
           </div>
         </div>
 
-        {/* 유튜브 영상 */}
-        {recipe.youtubeUrl && (
-          <div style={{ marginTop: '1.5rem', position: 'relative', paddingTop: '56.25%' }}>
-            <iframe
-              src={`https://www.youtube.com/embed/${extractYouTubeId(recipe.youtubeUrl)}`}
-              title="YouTube Video"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                border: 'none',
-                borderRadius: 8,
-              }}
-            />
+        {youtubeId && (
+          <div style={{ marginTop: '1.5rem' }}>
+            <div style={{ position: 'relative', paddingTop: '56.25%' }}>
+              <iframe
+                src={`https://www.youtube.com/embed/${youtubeId}`}
+                title="YouTube Video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  borderRadius: 8,
+                }}
+              />
+            </div>
+            <p style={{ fontSize: '0.85rem', color: '#888', marginTop: '0.5rem' }}>
+              {t('source')}:{' '}
+              <a href={recipe.youtubeUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#4fafff', textDecoration: 'underline' }}>
+                {t('youtube_link')}
+              </a>
+            </p>
           </div>
         )}
 
-        {/* 좋아요 */}
         <div style={{ marginTop: '1.5rem' }}>
           <LikeButton
             path={`recipes/${recipe.id}`}
@@ -265,17 +265,10 @@ export default function RecipeDetailPage() {
           />
         </div>
 
-        {/* 댓글 */}
         <h3 style={{ marginTop: '2rem' }}>💬 {t('see_all_comments')}</h3>
         {user ? (
           <div style={{ marginBottom: '1.5rem' }}>
-            <textarea
-              value={newComment}
-              onChange={e => setNewComment(e.target.value)}
-              rows={3}
-              placeholder={t('comment_placeholder')}
-              style={{ width: '100%', padding: '0.5rem', borderRadius: 6 }}
-            />
+            <textarea value={newComment} onChange={e => setNewComment(e.target.value)} rows={3} placeholder={t('comment_placeholder')} style={{ width: '100%', padding: '0.5rem', borderRadius: 6 }} />
             <button onClick={handleCommentSubmit} style={{
               marginTop: '0.5rem', backgroundColor: '#222', color: '#fff',
               border: 'none', padding: '0.4rem 0.8rem', borderRadius: 4, cursor: 'pointer'
@@ -285,7 +278,7 @@ export default function RecipeDetailPage() {
 
         {comments.length > 0 ? comments.map(comment => (
           <div key={comment.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid #333' }}>
-            <strong>{comment.author}</strong>
+            <strong>{comment.displayName}</strong>
             <p style={{ marginTop: '0.25rem' }}>{comment.content}</p>
           </div>
         )) : <p>{t('no_comments')}</p>}

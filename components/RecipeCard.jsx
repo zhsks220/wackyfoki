@@ -72,10 +72,7 @@ export default function RecipeCard({ recipe }) {
   const minutes = cookingTime ?? cookTime ?? '';
   const tasteValue = rating ?? taste ?? 0;
   const displayName = authorName || t('anonymous');
-
-  // ✅ 오직 이 줄만 수정
   const avatar = authorImage && authorImage.trim() !== '' ? authorImage : '/default-avatar.png';
-
   const timeAgo = createdAt?.toDate?.() ? formatSmartTime(createdAt.toDate(), t) : null;
 
   return (
@@ -138,15 +135,30 @@ export default function RecipeCard({ recipe }) {
       )}
 
       {youtubeUrl ? (
-        <div className="aspect-video w-full overflow-hidden rounded-lg">
-          <iframe
-            src={`https://www.youtube.com/embed/${extractYouTubeId(youtubeUrl)}`}
-            title={title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="w-full h-full"
-          />
-        </div>
+        <>
+          <div className="aspect-video w-full overflow-hidden rounded-lg">
+            <iframe
+              src={`https://www.youtube.com/embed/${extractYouTubeId(youtubeUrl)}`}
+              title={title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full"
+            />
+          </div>
+
+          {/* ✅ 출처 문구 추가 */}
+          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            📌 {t('source')}:{" "}
+            <a
+              href={youtubeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-blue-600"
+            >
+              {t('youtube_link')}
+            </a>
+          </div>
+        </>
       ) : (
         imageUrl && (
           <img

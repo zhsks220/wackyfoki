@@ -163,5 +163,7 @@
   "alert_deleted": "Recipe has been deleted.",
   "alert_delete_error": "An error occurred during deletion.",
   "delete_error": "Delete failed",
-  "load_error": "Failed to load recipe"
+  "load_error": "Failed to load recipe",
+  "source": "Source",
+  "youtube_link": "Watch on YouTube"
 }

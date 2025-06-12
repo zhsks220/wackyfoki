@@ -225,7 +225,7 @@
   "alert_deleted": "레시피가 삭제되었습니다.",
   "alert_delete_error": "삭제 중 오류가 발생했습니다.",
   "delete_error": "삭제 실패",
-  "load_error": "레시피 로딩 실패"
-
-  
+  "load_error": "레시피 로딩 실패",
+  "source": "출처",
+  "youtube_link": "YouTube 영상 보기"
 }

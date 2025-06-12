@@ -163,5 +163,8 @@
   "alert_deleted": "食谱已删除。",
   "alert_delete_error": "删除时发生错误。",
   "delete_error": "删除失败",
-  "load_error": "加载食谱失败"
+  "load_error": "加载食谱失败",
+  "source": "来源",
+  "youtube_link": "在YouTube上观看"
+
 }
