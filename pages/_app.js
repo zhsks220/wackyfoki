@@ -78,8 +78,10 @@ function InnerLayout({ Component, pageProps }) {
   }, []);
 
   const handleLogout = async () => {
-    await logout();
-    router.push('/');
+    if (confirm(t('confirm_logout'))) {
+      await logout();
+      router.push('/');
+    }
   };
 
   return (
@@ -90,7 +92,6 @@ function InnerLayout({ Component, pageProps }) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* ✅ 왼쪽 고정 광고 박스 (top 위치 조정됨) */}
       <div className="hidden lg:block fixed left-0 top-44 z-40 w-[160px] h-[600px] bg-gray-100 border border-gray-300 rounded shadow-md flex items-center justify-center">
         광고 자리
       </div>
@@ -214,7 +215,6 @@ function InnerLayout({ Component, pageProps }) {
         <Component {...pageProps} />
       </main>
 
-      {/* ✅ 푸터 위 광고 박스 */}
       <div className="w-full flex justify-center py-8">
         <div className="w-full max-w-[728px] h-[90px] bg-gray-200 rounded shadow-sm flex items-center justify-center">
           하단 광고 자리

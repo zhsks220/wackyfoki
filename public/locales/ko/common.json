@@ -104,7 +104,7 @@
   "privacy_section6_title": "6. 쿠키(Cookie)의 운영",
   "privacy_section6_content": "본 서비스는 광고 분석, 방문자 추적을 위해 Google Analytics 및 Google AdSense에서 제공하는 쿠키를 사용할 수 있습니다.",
   "privacy_section7_title": "7. 개인정보 보호책임자",
-  "privacy_section7_content": "개인정보 보호와 관련된 문의사항은 아래 이메일로 연락 주시기 바랍니다:\n📧 example@wackyfoki.com",
+  "privacy_section7_content": "개인정보 보호와 관련된 문의사항은 아래 이메일로 연락 주시기 바랍니다:\n📧 contact@wackyfoki.com",
   "privacy_effective_date": "시행일: 2025년 5월 25일",
 
   "terms_title": "이용약관",
@@ -173,7 +173,8 @@
   "contact_inquiry_ads": "광고/제휴 문의: 협업 및 제휴 관련",
   "contact_inquiry_report": "콘텐츠 신고: 부적절한 레시피 또는 댓글 제보",
   "contact_meta": "WackyFoki 문의 페이지입니다. 제휴, 문제 신고, 피드백은 언제든지 환영합니다.",
-  
+  "contact_notice": "문의 사항에 따라 분류를 선택해 주시면 보다 빠른 처리가 가능합니다.",
+
   "mypage_title": "마이페이지 - WackyFoki",
   "contact_title": "문의 - WackyFoki",
   "about_title": "소개 - WackyFoki",
@@ -182,5 +183,26 @@
   
   
   "loading_more": "로딩 중...",
-  "no_more_recipes": "더 이상 레시피가 없습니다"
+  "no_more_recipes": "더 이상 레시피가 없습니다",
+
+  "time_just_now": "방금 전",
+  "time_minute": "{{count}}분 전",
+  "time_hour": "{{count}}시간 전",
+  "time_day": "{{count}}일 전",
+  "time_week": "{{count}}주 전",
+  "time_month": "{{count}}개월 전",
+  "time_year": "{{count}}년 전",
+
+  "confirm_logout": "로그아웃 하시겠습니까?",
+  "email": "이메일",
+  "password": "비밀번호",
+  "register": "회원가입",
+  "login_with_email": "이메일로 로그인",
+  "login_with_google": "Google 계정으로 로그인",
+  "already_have_account": "이미 계정이 있으신가요?",
+  "no_account_yet": "계정이 없으신가요? 회원가입",
+  "forgot_password": "비밀번호 찾기",
+  "login_success": "🎉 로그인 성공!",
+  "email_error": "이메일 인증 오류",
+  "google_login_error": "Google 로그인 실패"
 }

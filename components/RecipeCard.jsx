@@ -1,7 +1,7 @@
 import { FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa';
 import { useTranslation } from 'next-i18next';
+import { useRouter } from 'next/router';
 
-/* 별점 한 줄 -------------------------------------------------- */
 function StarRow({ value = 0 }) {
   const v = Number(value) || 0;
   return (
@@ -20,15 +20,33 @@ function StarRow({ value = 0 }) {
   );
 }
 
-/* YouTube ID 추출 -------------------------------------------- */
 function extractYouTubeId(url = '') {
-  const m = url.match(/(?:youtube\.com.*[?&]v=|youtu\.be\/)([^&?\/]+)/);
+  const m = url.match(/(?:youtube\.com.*[?&]v=|youtu\.be\/)([^&?/]+)/);
   return m && m[1] ? m[1] : '';
 }
 
-/* 레시피 카드 -------------------------------------------------- */
+function formatSmartTime(date, t) {
+  const now = new Date();
+  const diff = now - date;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const weeks = Math.floor(days / 7);
+  const months = Math.floor(days / 30);
+  const years = Math.floor(days / 365);
+
+  if (years >= 1) return t('time_year', { count: years });
+  if (months >= 1) return t('time_month', { count: months });
+  if (weeks >= 1) return t('time_week', { count: weeks });
+  if (days >= 1) return t('time_day', { count: days });
+  if (hours >= 1) return t('time_hour', { count: hours });
+  if (minutes >= 1) return t('time_minute', { count: minutes });
+  return t('time_just_now');
+}
+
 export default function RecipeCard({ recipe }) {
   const { t } = useTranslation('common');
+  const { locale } = useRouter();
 
   const {
     title,
@@ -41,53 +59,59 @@ export default function RecipeCard({ recipe }) {
     rating,
     taste,
     authorName,
-    authorAvatar,
+    authorImage,
+    createdAt,
     ingredients = '',
     materials: _materials,
   } = recipe;
 
-  /* 준비물 필드 통일 */
   const materials = Array.isArray(_materials)
     ? _materials
-    : ingredients
-        .split(',')
-        .map((item) => item.trim())
-        .filter(Boolean);
+    : ingredients.split(',').map((i) => i.trim()).filter(Boolean);
 
-  const minutes     = cookingTime ?? cookTime ?? '';
-  const tasteValue  = rating ?? taste ?? 0;
+  const minutes = cookingTime ?? cookTime ?? '';
+  const tasteValue = rating ?? taste ?? 0;
   const displayName = authorName || t('anonymous');
+
+  // ✅ 오직 이 줄만 수정
+  const avatar = authorImage && authorImage.trim() !== '' ? authorImage : '/default-avatar.png';
+
+  const timeAgo = createdAt?.toDate?.() ? formatSmartTime(createdAt.toDate(), t) : null;
 
   return (
     <article
       className="rounded-xl p-6 shadow-md space-y-4 transition-colors duration-300"
       style={{
         backgroundColor: 'var(--recipe-card-bg)',
-        color:          'var(--recipe-card-text)',
+        color: 'var(--recipe-card-text)',
       }}
     >
-      {/* ── 상단: 작성자 + 별점 ── */}
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-2">
-          {authorAvatar && (
-            <img
-              src={authorAvatar}
-              alt={displayName}
-              className="w-8 h-8 rounded-full object-cover"
-            />
-          )}
-          <span className="font-semibold">{displayName}</span>
+          <img
+            src={avatar}
+            alt={displayName}
+            className="w-8 h-8 rounded-full object-cover"
+          />
+          <div className="flex flex-col">
+            <span className="font-semibold">{displayName}</span>
+            {timeAgo && (
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {timeAgo}
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="space-y-1 text-xs text-right">
+        <div className="text-xs text-right space-y-1">
           <div>
-            <span style={{ color: 'var(--border-color)' }} className="mr-1">
+            <span className="mr-1" style={{ color: 'var(--border-color)' }}>
               {t('difficulty')}
             </span>
             <StarRow value={difficulty} />
           </div>
           <div>
-            <span style={{ color: 'var(--border-color)' }} className="mr-1">
+            <span className="mr-1" style={{ color: 'var(--border-color)' }}>
               {t('taste')}
             </span>
             <StarRow value={tasteValue} />
@@ -95,10 +119,8 @@ export default function RecipeCard({ recipe }) {
         </div>
       </div>
 
-      {/* ── 제목 ── */}
       <h2 className="text-xl font-bold">{title}</h2>
 
-      {/* ── 준비물 ── */}
       {materials.length > 0 && (
         <div className="mt-2 pt-2 border-t border-[var(--border-color)] text-sm text-neutral-600 dark:text-neutral-400">
           <span className="font-medium">{t('prepare_items')}:</span>{' '}
@@ -106,18 +128,15 @@ export default function RecipeCard({ recipe }) {
         </div>
       )}
 
-      {/* ── 설명 ── */}
       <p className="leading-relaxed whitespace-pre-wrap">{description}</p>
 
-      {/* ── 조리 시간 ── */}
       {minutes !== '' && (
-        <div style={{ color: 'var(--border-color)' }} className="text-sm">
+        <div className="text-sm" style={{ color: 'var(--border-color)' }}>
           🕒 {minutes}
           {t('cook_time')}
         </div>
       )}
 
-      {/* ── 썸네일 / YouTube ── */}
       {youtubeUrl ? (
         <div className="aspect-video w-full overflow-hidden rounded-lg">
           <iframe

@@ -81,7 +81,7 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
       await addDoc(collection(db, 'recipes'), {
         title,
         ingredients,
-        instructions,
+        description: instructions,
         cookTime: cookTime ? Number(cookTime) : '',
         taste,
         difficulty,
@@ -89,8 +89,8 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
         imageUrl,
         category,
         createdAt: serverTimestamp(),
-        authorName: currentUser.displayName || t('anonymous'),
-        authorImage: user?.profileImage || currentUser.photoURL || '',
+        authorName: user?.displayName || t('anonymous'),
+        authorImage: user?.photoURL || '', // ✅ 여기만 수정됨!
         uid: currentUser.uid,
       });
 
