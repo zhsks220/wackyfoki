@@ -122,12 +122,12 @@ export default function EditProfile() {
     try {
       if (image) {
         const fileName = `${user.uid}-${Date.now()}.webp`;
-        const storageRef = ref(storage, fileName);
 
-        const fileToUpload =
-          image instanceof File
-            ? image
-            : new File([image], fileName, { type: image.type || 'image/webp' });
+        // ✅ 경로 수정: Storage 규칙에 맞게 설정
+        const storageRef = ref(storage, `profileImages/${user.uid}/${fileName}`);
+
+        // ✅ 타입 명확히 지정 (Blob 대응 포함)
+        const fileToUpload = new File([image], fileName, { type: 'image/webp' });
 
         await uploadBytes(storageRef, fileToUpload);
         imageUrl = await getDownloadURL(storageRef);
