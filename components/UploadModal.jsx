@@ -18,7 +18,7 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
 
   const [title, setTitle] = useState('');
   const [ingredients, setIngredients] = useState('');
-  const [description, setDescription] = useState(''); // 조리과정 추가
+  const [description, setDescription] = useState('');
   const [cookTime, setCookTime] = useState('');
   const [taste, setTaste] = useState(0);
   const [difficulty, setDifficulty] = useState(0);
@@ -93,7 +93,7 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
       await addDoc(collection(db, 'recipes'), {
         title,
         ingredients,
-        description, // ✅ 조리 과정 필드로 저장
+        description,
         cookTime: cookTime ? Number(cookTime) : '',
         taste,
         difficulty,
@@ -123,7 +123,7 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4">
       <div
-        className="bg-[var(--background)] text-[var(--foreground)] rounded-lg shadow-xl w-full max-w-md p-6 relative transition overflow-y-auto scrollbar-hide"
+        className="bg-[var(--background)] text-[var(--foreground)] rounded-lg shadow-xl w-full max-w-md p-6 relative transition overflow-y-auto no-scrollbar"
         style={{ maxHeight: '90vh' }}
       >
         <button
@@ -207,7 +207,7 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
           <ReactSortable
             list={steps}
             setList={setSteps}
-            className="space-y-3 mb-4 max-h-60 overflow-y-auto"
+            className="space-y-3 mb-4 max-h-60 overflow-y-auto no-scrollbar"
           >
             {steps.map((item, index) => (
               <div key={item.id} className="relative bg-zinc-100 p-2 rounded">

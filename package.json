@@ -29,7 +29,8 @@
     "react-modal": "^3.16.3",
     "react-sortablejs": "^6.1.4",
     "sortablejs": "^1.15.6",
-    "swiper": "^11.2.8"
+    "swiper": "^11.2.8",
+    "tailwind-scrollbar-hide": "^4.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
