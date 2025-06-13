@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "bizarre-food"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }
