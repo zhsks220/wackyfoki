@@ -20,9 +20,7 @@ export default function EditRecipePage() {
   const [difficulty, setDifficulty] = useState(0);
   const [taste, setTaste] = useState(0);
   const [youtubeUrl, setYoutubeUrl] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [newImage, setNewImage] = useState(null);
-  const [preview, setPreview] = useState('');
+  const [imageItems, setImageItems] = useState([]); // [{ url, file?, desc }]
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,70 +28,82 @@ export default function EditRecipePage() {
 
     const fetchData = async () => {
       const snap = await getDoc(doc(db, 'recipes', id));
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data.uid !== user?.uid) {
-          alert('본인의 레시피만 수정할 수 있습니다.');
-          router.push('/');
-          return;
-        }
+      if (!snap.exists()) return;
 
-        setTitle(data.title || '');
-        setDescription(data.description || '');
-        setIngredients(data.ingredients || '');
-        setCookTime(data.cookTime || '');
-        setDifficulty(data.difficulty || 0);
-        setTaste(data.taste || 0);
-        setYoutubeUrl(data.youtubeUrl || '');
-        setImageUrl(data.imageUrl || '');
-        setPreview(data.imageUrl || '');
+      const data = snap.data();
+      if (data.uid !== user?.uid) {
+        alert('본인의 레시피만 수정할 수 있습니다.');
+        router.push('/');
+        return;
       }
+
+      setTitle(data.title || '');
+      setDescription(data.description || '');
+      setIngredients(data.ingredients || '');
+      setCookTime(data.cookTime || '');
+      setDifficulty(data.difficulty || 0);
+      setTaste(data.taste || 0);
+      setYoutubeUrl(data.youtubeUrl || '');
+
+      const urls = data.imageUrls || [];
+      const descs = data.descriptions || [];
+      setImageItems(urls.map((url, i) => ({ url, desc: descs[i] || '' })));
+
       setLoading(false);
     };
 
     fetchData();
   }, [id, user, router]);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setNewImage(file);
-      setPreview(URL.createObjectURL(file));
-    }
+  const handleAddImages = (e) => {
+    const files = Array.from(e.target.files);
+    const newItems = files.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+      desc: '',
+    }));
+    setImageItems(prev => [...prev, ...newItems]);
+  };
+
+  const handleDeleteImage = (index) => {
+    setImageItems(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleUpdate = async () => {
     if (!title.trim() || !description.trim()) {
-      alert('제목과 설명은 필수입니다.');
+      alert('제목과 조리 과정은 필수입니다.');
       return;
     }
 
-    let finalImageUrl = imageUrl;
-
-    if (newImage) {
-      const imageRef = ref(storage, `images/${newImage.name}-${Date.now()}`);
-      const snap = await uploadBytes(imageRef, newImage);
-      finalImageUrl = await getDownloadURL(snap.ref);
+    const uploadedUrls = [];
+    for (const item of imageItems) {
+      if (item.url) {
+        uploadedUrls.push(item.url);
+      } else if (item.file) {
+        const imageRef = ref(storage, `uploads/${item.file.name}-${Date.now()}`);
+        const snap = await uploadBytes(imageRef, item.file);
+        const url = await getDownloadURL(snap.ref);
+        uploadedUrls.push(url);
+      }
     }
 
-    try {
-      await updateDoc(doc(db, 'recipes', id), {
-        title,
-        description,
-        ingredients,
-        cookTime: Number(cookTime),
-        difficulty,
-        taste,
-        youtubeUrl: youtubeUrl.trim(),
-        imageUrl: finalImageUrl,
-        updatedAt: new Date(),
-      });
-      alert('레시피가 수정되었습니다.');
-      router.push(`/recipe/${id}`);
-    } catch (err) {
-      console.error('수정 실패:', err);
-      alert('수정 중 오류가 발생했습니다.');
-    }
+    const descriptions = imageItems.map(i => i.desc);
+
+    await updateDoc(doc(db, 'recipes', id), {
+      title,
+      description,
+      ingredients,
+      cookTime: Number(cookTime),
+      difficulty,
+      taste,
+      youtubeUrl: youtubeUrl.trim(),
+      imageUrls: uploadedUrls,
+      descriptions,
+      updatedAt: new Date(),
+    });
+
+    alert('레시피가 수정되었습니다.');
+    router.push(`/recipe/${id}`);
   };
 
   if (loading) return <p style={{ padding: '2rem' }}>⏳ 로딩 중...</p>;
@@ -103,64 +113,59 @@ export default function EditRecipePage() {
       <h1 style={{ fontSize: '1.8rem', marginBottom: '1rem' }}>✏️ 레시피 수정</h1>
 
       <label>제목</label>
-      <input
-        type="text"
-        value={title}
-        onChange={e => setTitle(e.target.value)}
-        style={inputStyle}
-      />
+      <input style={inputStyle} value={title} onChange={e => setTitle(e.target.value)} />
 
       <label>준비물</label>
-      <textarea
-        value={ingredients}
-        onChange={e => setIngredients(e.target.value)}
-        rows={3}
-        style={inputStyle}
-      />
+      <textarea style={inputStyle} rows={2} value={ingredients} onChange={e => setIngredients(e.target.value)} />
 
       <label>조리 과정</label>
-      <textarea
-        value={description}
-        onChange={e => setDescription(e.target.value)}
-        rows={6}
-        style={inputStyle}
-      />
+      <textarea style={inputStyle} rows={6} value={description} onChange={e => setDescription(e.target.value)} />
 
       <label>조리 시간 (분)</label>
-      <input
-        type="number"
-        value={cookTime}
-        onChange={(e) => setCookTime(e.target.value)}
-        style={inputStyle}
-      />
+      <input style={inputStyle} type="number" value={cookTime} onChange={e => setCookTime(e.target.value)} />
 
       <label>YouTube 링크</label>
-      <input
-        type="text"
-        value={youtubeUrl}
-        onChange={(e) => setYoutubeUrl(e.target.value)}
-        placeholder="https://youtu.be/abc123"
-        style={inputStyle}
-      />
+      <input style={inputStyle} value={youtubeUrl} onChange={e => setYoutubeUrl(e.target.value)} />
 
-      <label style={{ display: 'block', marginBottom: 8 }}>이미지 수정</label>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        style={{
-          marginBottom: '1.5rem',
-          display: 'block',
-          width: '100%'
-          }}
-      />
-      {preview && (
-        <img
-          src={preview}
-          alt="미리보기"
-          style={{ width: '100%', maxHeight: 300, objectFit: 'cover', marginBottom: '1.5rem', borderRadius: 8 }}
-        />
-      )}
+      <label>조리 이미지 및 설명</label>
+      {imageItems.map((item, i) => (
+        <div key={i} style={{ position: 'relative', marginBottom: '1.5rem' }}>
+          <img
+            src={item.preview || item.url}
+            alt="preview"
+            style={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 8 }}
+          />
+          <button
+            onClick={() => handleDeleteImage(i)}
+            style={{
+              position: 'absolute',
+              top: 10,
+              right: 10,
+              background: 'rgba(0,0,0,0.6)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '50%',
+              width: 28,
+              height: 28,
+              fontSize: '1rem',
+              cursor: 'pointer',
+            }}
+          >✕</button>
+          <textarea
+            placeholder="이 조리 이미지 설명"
+            rows={2}
+            value={item.desc}
+            onChange={e => {
+              const newItems = [...imageItems];
+              newItems[i].desc = e.target.value;
+              setImageItems(newItems);
+            }}
+            style={{ ...inputStyle, marginTop: '0.5rem' }}
+          />
+        </div>
+      ))}
+
+      <input type="file" accept="image/*" multiple onChange={handleAddImages} style={{ marginBottom: '1.5rem' }} />
 
       <label style={{ display: 'block', marginBottom: 8 }}>요리 난이도</label>
       <StarRating rating={difficulty} onRatingChange={setDifficulty} />
@@ -168,7 +173,7 @@ export default function EditRecipePage() {
         난이도: {difficulty.toFixed(1)} / 5
       </p>
 
-      <label>맛 평가</label>
+      <label style={{ display: 'block', marginBottom: 8 }}>맛 평가</label>
       <StarRating rating={taste} onRatingChange={setTaste} />
       <p style={{ fontSize: '0.9rem', color: '#555', marginBottom: '2rem' }}>
         맛 점수: {taste.toFixed(1)} / 5

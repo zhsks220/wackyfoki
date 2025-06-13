@@ -20,9 +20,12 @@ function StarRow({ value = 0 }) {
   );
 }
 
-function extractYouTubeId(url = '') {
-  const m = url.match(/(?:youtube\.com.*[?&]v=|youtu\.be\/)([^&?/]+)/);
-  return m && m[1] ? m[1] : '';
+function getYouTubeEmbedUrl(url = '') {
+  const match = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&?/]+)/,
+  );
+  const videoId = match?.[1];
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
 }
 
 function formatSmartTime(date, t) {
@@ -51,7 +54,8 @@ export default function RecipeCard({ recipe }) {
   const {
     title,
     description,
-    imageUrl,
+    descriptions = [],
+    imageUrls = [],
     youtubeUrl,
     cookingTime,
     cookTime,
@@ -125,7 +129,12 @@ export default function RecipeCard({ recipe }) {
         </div>
       )}
 
-      <p className="leading-relaxed whitespace-pre-wrap">{description}</p>
+      {/* ✅ 항상 출력되도록 수정 */}
+      {description && (
+        <p className="text-sm leading-relaxed whitespace-pre-wrap mt-2">
+          {description}
+        </p>
+      )}
 
       {minutes !== '' && (
         <div className="text-sm" style={{ color: 'var(--border-color)' }}>
@@ -133,11 +142,11 @@ export default function RecipeCard({ recipe }) {
         </div>
       )}
 
-      {youtubeUrl ? (
+      {youtubeUrl && (
         <>
           <div className="aspect-video w-full overflow-hidden rounded-lg">
             <iframe
-              src={`https://www.youtube.com/embed/${extractYouTubeId(youtubeUrl)}`}
+              src={getYouTubeEmbedUrl(youtubeUrl)}
               title={title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -146,7 +155,7 @@ export default function RecipeCard({ recipe }) {
           </div>
 
           <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            📌 {t('source')}:{" "}
+            📌 {t('source')}:{' '}
             <a
               href={youtubeUrl}
               target="_blank"
@@ -157,15 +166,23 @@ export default function RecipeCard({ recipe }) {
             </a>
           </div>
         </>
-      ) : (
-        imageUrl && (
-          <img
-            src={imageUrl}
-            alt={title}
-            className="w-full rounded-lg object-cover"
-          />
-        )
       )}
+
+      {imageUrls.length > 0 &&
+        imageUrls.map((url, i) => (
+          <div key={i} className="space-y-2">
+            <img
+              src={url}
+              alt={`step-${i}`}
+              className="w-full rounded-lg object-cover"
+            />
+            {descriptions[i] && (
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                {descriptions[i]}
+              </p>
+            )}
+          </div>
+        ))}
     </article>
   );
 }
