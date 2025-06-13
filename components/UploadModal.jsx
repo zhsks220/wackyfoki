@@ -90,7 +90,7 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
         category,
         createdAt: serverTimestamp(),
         authorName: user?.displayName || t('anonymous'),
-        authorImage: user?.photoURL || '',
+        authorImage: user?.photoURL || '', // ✅ 여기만 수정됨!
         uid: currentUser.uid,
       });
 
@@ -108,8 +108,8 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4 overflow-auto py-10">
-      <div className="bg-[var(--background)] text-[var(--foreground)] rounded-lg shadow-xl w-full max-w-md relative transition max-h-[90vh] overflow-y-auto p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4">
+      <div className="bg-[var(--background)] text-[var(--foreground)] rounded-lg shadow-xl w-full max-w-md p-6 relative transition">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-zinc-500 hover:text-white"
