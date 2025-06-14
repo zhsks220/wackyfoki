@@ -1,6 +1,7 @@
 // pages/index.js
 'use client';
 
+import Head from 'next/head'; // ✅ 추가
 import { useEffect, useState, useRef, useCallback } from 'react';
 import {
   collection, getDocs, query, orderBy, doc, deleteDoc,
@@ -179,7 +180,22 @@ export default function HomePage() {
   });
 
   return (
-    <div className="p-8 max-w-3xl mx-auto bg-[var(--background)] text-[var(--foreground)]">
+    <>
+      {/* ✅ SEO & OG 메타 태그 삽입 */}
+      <Head>
+        <title>WackyFoki - Recipe Feed</title>
+        <meta name="description" content="세상에 단 하나뿐인 기묘한 레시피를 공유하는 공간, WackyFoki!" />
+        <meta property="og:title" content="WackyFoki - 기묘한 레시피 피드" />
+        <meta property="og:description" content="전 세계 유저들과 나만의 요리를 공유하세요!" />
+        <meta property="og:image" content="https://wackyfoki.com/og-image.png" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="WackyFoki - 기묘한 레시피 피드" />
+        <meta name="twitter:description" content="전 세계 유저들과 나만의 요리를 공유하세요!" />
+        <meta name="twitter:image" content="https://wackyfoki.com/og-image.png" />
+      </Head>
+
+      <div className="p-8 max-w-3xl mx-auto bg-[var(--background)] text-[var(--foreground)]">
       {/* 업로드 영역 */}
       <div className="bg-[var(--card-bg)] p-4 rounded-xl shadow mb-6">
         <div className="flex items-center gap-3 mb-4">
@@ -304,7 +320,8 @@ export default function HomePage() {
           {t('no_more_recipes')}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 
