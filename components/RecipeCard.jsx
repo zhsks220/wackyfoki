@@ -80,10 +80,34 @@ export default function RecipeCard({ recipe }) {
   const avatar = authorImage && authorImage.trim() !== '' ? authorImage : '/default-avatar.png';
   const timeAgo = createdAt?.toDate?.() ? formatSmartTime(createdAt.toDate(), t) : null;
 
+  // ✅ 이미지 로딩 감지하여 overflow 체크
   useEffect(() => {
-    if (textRef.current) {
-      const height = textRef.current.scrollHeight;
-      setIsOverflowing(height > 650); // 글+이미지 제한
+    const checkOverflow = () => {
+      if (textRef.current) {
+        const height = textRef.current.scrollHeight;
+        setIsOverflowing(height > 650);
+      }
+    };
+
+    const images = textRef.current?.querySelectorAll('img') || [];
+    let loadedCount = 0;
+
+    if (images.length === 0) {
+      checkOverflow();
+    } else {
+      images.forEach((img) => {
+        if (img.complete) {
+          loadedCount++;
+          if (loadedCount === images.length) checkOverflow();
+        } else {
+          const onLoadOrError = () => {
+            loadedCount++;
+            if (loadedCount === images.length) checkOverflow();
+          };
+          img.addEventListener('load', onLoadOrError);
+          img.addEventListener('error', onLoadOrError);
+        }
+      });
     }
   }, [recipe]);
 
