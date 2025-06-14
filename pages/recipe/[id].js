@@ -12,6 +12,7 @@ import { db } from '../../firebase/config';
 import { useUser } from '@/contexts/UserContext';
 import { FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa';
 import LikeButton from '@/components/LikeButton';
+import CommentDrawer from '@/components/CommentDrawer';
 import { useTranslation } from 'next-i18next';
 
 function StarRow({ value = 0 }) {
@@ -32,11 +33,10 @@ function StarRow({ value = 0 }) {
   );
 }
 
-function extractYouTubeId(url) {
+function extractYouTubeId(url = '') {
   try {
-    const regExp = /(?:youtube\.com.*(?:\?|&)v=|youtu\.be\/|shorts\/)([^&?/]+)/;
-    const match = url.match(regExp);
-    return match && match[1] ? match[1] : null;
+    const match = url.match(/(?:youtube\.com.*[?&]v=|youtu\.be\/|shorts\/)([^&?/]+)/);
+    return match?.[1] || null;
   } catch {
     return null;
   }
@@ -53,6 +53,7 @@ export default function RecipeDetailPage() {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showDrawer, setShowDrawer] = useState(false);
   const dropdownRef = useRef(null);
 
   const fetchRecipe = useCallback(async () => {
@@ -77,8 +78,7 @@ export default function RecipeDetailPage() {
       } else {
         setRecipe(null);
       }
-    } catch (err) {
-      console.error(t('load_error'), err);
+    } catch {
       setRecipe(null);
     } finally {
       setLoading(false);
@@ -120,22 +120,6 @@ export default function RecipeDetailPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleDelete = async () => {
-    if (!window.confirm(t('confirm_delete'))) return;
-    try {
-      await deleteDoc(doc(db, 'recipes', recipe.id));
-      alert(t('alert_deleted'));
-      router.push('/');
-    } catch (err) {
-      console.error(t('delete_error'), err);
-      alert(t('alert_delete_error'));
-    }
-  };
-
-  const handleEdit = () => {
-    router.push(`/edit/${recipe.id}`);
-  };
-
   const handleCommentSubmit = async () => {
     if (!newComment.trim()) return;
     try {
@@ -165,46 +149,50 @@ export default function RecipeDetailPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm(t('confirm_delete'))) return;
+    try {
+      await deleteDoc(doc(db, 'recipes', recipe.id));
+      alert(t('alert_deleted'));
+      router.push('/');
+    } catch {
+      alert(t('alert_delete_error'));
+    }
+  };
+
+  const handleEdit = () => {
+    router.push(`/edit/${recipe.id}`);
+  };
+
   const isAuthor = user?.uid === recipe?.uid;
   const youtubeId = extractYouTubeId(recipe?.youtubeUrl);
 
-  if (loading) return <p style={{ padding: '2rem' }}>⏳ {t('loading')}</p>;
-  if (!recipe) return <p style={{ padding: '2rem' }}>😢 {t('not_found')}</p>;
+  if (loading) return <p style={{ padding: '2rem' }}>{t('loading')}</p>;
+  if (!recipe) return <p style={{ padding: '2rem' }}>{t('not_found')}</p>;
 
   return (
     <>
       <Head><title>{recipe.title} - WackyFoki</title></Head>
       <div style={{ padding: '2rem', maxWidth: 800, margin: '0 auto' }}>
 
-        {/* 드롭다운 오른쪽 끝에 고정 */}
+        {/* 드롭다운 */}
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           {isAuthor && (
             <div ref={dropdownRef} style={{ position: 'relative' }}>
               <button onClick={() => setDropdownOpen(!dropdownOpen)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#999' }}>⋯</button>
               {dropdownOpen && (
                 <div style={{
-                  position: 'absolute',
-                  top: '2rem',
-                  right: 0,
-                  backgroundColor: '#222',
-                  border: '1px solid #444',
-                  borderRadius: 6,
-                  overflow: 'hidden',
-                  zIndex: 9999
+                  position: 'absolute', top: '2rem', right: 0,
+                  backgroundColor: '#222', border: '1px solid #444', borderRadius: 6, overflow: 'hidden', zIndex: 9999
                 }}>
-                  <button onClick={handleEdit} style={menuStyle}><span>✏</span><span>{t('edit')}</span></button>
-                  <button onClick={handleDelete} style={menuStyle}><span>🗑</span><span>{t('delete')}</span></button>
+                  <button onClick={handleEdit} style={menuStyle}><span style={{ marginRight: '0.5rem' }}>✏</span>{t('edit')}</button>
+                  <button onClick={handleDelete} style={menuStyle}><span style={{ marginRight: '0.5rem' }}>🗑</span>{t('delete')}</button>
                 </div>
               )}
             </div>
           )}
         </div>
 
-        {/* 작성자, 제목 */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <img src={recipe.authorImage} alt={recipe.authorName} style={{ width: 36, height: 36, borderRadius: '50%', marginRight: 10 }} />
-          <span style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>{recipe.authorName}</span>
-        </div>
         <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>{recipe.title}</h1>
 
         {/* 본문 내용 */}
@@ -218,7 +206,10 @@ export default function RecipeDetailPage() {
         </div>
 
         <hr style={{ borderColor: '#444', margin: '1.5rem 0' }} />
-        <p><strong>{t('description')}:</strong><br />{recipe.description || t('not_entered')}</p>
+        <p style={{ whiteSpace: 'pre-wrap' }}>
+          <strong>{t('description')}:</strong><br />
+          {recipe.description || t('not_entered')}
+        </p>
 
         {Array.isArray(recipe.imageUrls) && recipe.imageUrls.map((url, i) => (
           <div key={i} style={{ margin: '1rem 0' }}>
@@ -259,33 +250,111 @@ export default function RecipeDetailPage() {
         <h3 style={{ marginTop: '2rem' }}>💬 {t('see_all_comments')}</h3>
         {user ? (
           <div style={{ marginBottom: '1.5rem' }}>
-            <textarea value={newComment} onChange={e => setNewComment(e.target.value)} rows={3} placeholder={t('comment_placeholder')} style={{ width: '100%', padding: '0.5rem', borderRadius: 6 }} />
-            <button onClick={handleCommentSubmit} style={{ marginTop: '0.5rem', backgroundColor: '#222', color: '#fff', border: 'none', padding: '0.4rem 0.8rem', borderRadius: 4, cursor: 'pointer' }}>{t('submit')}</button>
-          </div>
-        ) : <p>{t('login_required_comment')}</p>}
-
-        {comments.length > 0 ? comments.map(comment => (
-          <div key={comment.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid #333' }}>
-            <strong>{comment.displayName}</strong>
-            <p style={{ marginTop: '0.25rem' }}>{comment.content}</p>
-            <LikeButton
-              path={`recipes/${recipe.id}/comments/${comment.id}`}
-              uid={user?.uid}
-              likedBy={comment.likedBy || []}
-              likes={comment.likes || 0}
-              onChange={(newLikedBy, newLikes) =>
-                setComments(prev => prev.map(c => c.id === comment.id ? { ...c, likedBy: newLikedBy, likes: newLikes } : c))
-              }
+            <textarea
+              value={newComment}
+              onChange={e => setNewComment(e.target.value)}
+              rows={3}
+              placeholder={t('comment_placeholder')}
+              style={{ width: '100%', padding: '0.5rem', borderRadius: 6 }}
             />
+            <button
+              onClick={handleCommentSubmit}
+              style={{
+                marginTop: '0.5rem',
+                backgroundColor: '#222',
+                color: '#fff',
+                border: 'none',
+                padding: '0.4rem 0.8rem',
+                borderRadius: 4,
+                cursor: 'pointer',
+              }}
+            >
+              {t('submit')}
+            </button>
           </div>
-        )) : <p>{t('no_comments')}</p>}
+        ) : (
+          <p>{t('login_required_comment')}</p>
+        )}
+
+        {comments.length > 0 ? (
+          <div style={{ position: 'relative', overflow: 'hidden' }}>
+            <div style={{ maxHeight: '900px', overflow: 'visible', position: 'relative' }}>
+              {comments.slice(0, 6).map((comment) => (
+                <div key={comment.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid #333' }}>
+                  <strong>{comment.displayName}</strong>
+                  <p style={{ marginTop: '0.25rem' }}>{comment.content}</p>
+                  <LikeButton
+                    path={`recipes/${recipe.id}/comments/${comment.id}`}
+                    uid={user?.uid}
+                    likedBy={comment.likedBy || []}
+                    likes={comment.likes || 0}
+                    onChange={(newLikedBy, newLikes) =>
+                      setComments(prev =>
+                        prev.map(c => c.id === comment.id ? { ...c, likedBy: newLikedBy, likes: newLikes } : c)
+                      )
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+
+            {comments.length > 6 && (
+              <>
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '4rem',
+                    background: 'linear-gradient(to top, #111, transparent)',
+                    pointerEvents: 'none',
+                    borderBottomLeftRadius: 8,
+                    borderBottomRightRadius: 8,
+                  }}
+                />
+                <div style={{ textAlign: 'center', marginTop: '-2.5rem', position: 'relative', zIndex: 10 }}>
+                  <button
+                    onClick={() => setShowDrawer(true)}
+                    style={{
+                      padding: '0.3rem 0.75rem',
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(8px)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '999px',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                      e.currentTarget.style.color = '#f0f0f0';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                      e.currentTarget.style.color = '#fff';
+                    }}
+                  >
+                    {t('see_all_comments')}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <p>{t('no_comments')}</p>
+        )}
       </div>
+
+      <CommentDrawer open={showDrawer} onClose={() => setShowDrawer(false)} recipeId={recipe.id} user={user} />
     </>
   );
 }
 
 const menuStyle = {
-  display: 'inline-flex',
+  display: 'flex',
   alignItems: 'center',
   width: '100%',
   padding: '0.5rem 1rem',
@@ -295,5 +364,4 @@ const menuStyle = {
   textAlign: 'left',
   cursor: 'pointer',
   fontSize: '0.95rem',
-  gap: '0.5rem',
 };

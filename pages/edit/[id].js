@@ -7,8 +7,10 @@ import { db, storage } from '../../firebase/config';
 import { useUser } from '@/contexts/UserContext';
 import StarRating from '@/components/StarRating';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useTranslation } from 'next-i18next';
 
 export default function EditRecipePage() {
+  const { t } = useTranslation('common');
   const router = useRouter();
   const { id } = router.query;
   const { user } = useUser();
@@ -20,7 +22,7 @@ export default function EditRecipePage() {
   const [difficulty, setDifficulty] = useState(0);
   const [taste, setTaste] = useState(0);
   const [youtubeUrl, setYoutubeUrl] = useState('');
-  const [imageItems, setImageItems] = useState([]); // [{ url, file?, desc }]
+  const [imageItems, setImageItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export default function EditRecipePage() {
 
       const data = snap.data();
       if (data.uid !== user?.uid) {
-        alert('본인의 레시피만 수정할 수 있습니다.');
+        alert(t('alert_not_owner'));
         router.push('/');
         return;
       }
@@ -53,7 +55,7 @@ export default function EditRecipePage() {
     };
 
     fetchData();
-  }, [id, user, router]);
+  }, [id, user, router, t]);
 
   const handleAddImages = (e) => {
     const files = Array.from(e.target.files);
@@ -71,7 +73,7 @@ export default function EditRecipePage() {
 
   const handleUpdate = async () => {
     if (!title.trim() || !description.trim()) {
-      alert('제목과 조리 과정은 필수입니다.');
+      alert(t('alert_required_title_desc'));
       return;
     }
 
@@ -102,32 +104,32 @@ export default function EditRecipePage() {
       updatedAt: new Date(),
     });
 
-    alert('레시피가 수정되었습니다.');
+    alert(t('alert_recipe_updated'));
     router.push(`/recipe/${id}`);
   };
 
-  if (loading) return <p style={{ padding: '2rem' }}>⏳ 로딩 중...</p>;
+  if (loading) return <p style={{ padding: '2rem' }}>{t('loading')}</p>;
 
   return (
     <div style={{ padding: '2rem', maxWidth: 800, margin: '0 auto' }}>
-      <h1 style={{ fontSize: '1.8rem', marginBottom: '1rem' }}>✏️ 레시피 수정</h1>
+      <h1 style={{ fontSize: '1.8rem', marginBottom: '1rem' }}>{t('edit_recipe_title')}</h1>
 
-      <label>제목</label>
+      <label>{t('label_title')}</label>
       <input style={inputStyle} value={title} onChange={e => setTitle(e.target.value)} />
 
-      <label>준비물</label>
+      <label>{t('label_ingredients')}</label>
       <textarea style={inputStyle} rows={2} value={ingredients} onChange={e => setIngredients(e.target.value)} />
 
-      <label>조리 과정</label>
+      <label>{t('label_description')}</label>
       <textarea style={inputStyle} rows={6} value={description} onChange={e => setDescription(e.target.value)} />
 
-      <label>조리 시간 (분)</label>
+      <label>{t('label_cook_time')}</label>
       <input style={inputStyle} type="number" value={cookTime} onChange={e => setCookTime(e.target.value)} />
 
-      <label>YouTube 링크</label>
+      <label>{t('label_youtube')}</label>
       <input style={inputStyle} value={youtubeUrl} onChange={e => setYoutubeUrl(e.target.value)} />
 
-      <label>조리 이미지 및 설명</label>
+      <label>{t('label_images')}</label>
       {imageItems.map((item, i) => (
         <div key={i} style={{ position: 'relative', marginBottom: '1.5rem' }}>
           <img
@@ -152,7 +154,7 @@ export default function EditRecipePage() {
             }}
           >✕</button>
           <textarea
-            placeholder="이 조리 이미지 설명"
+            placeholder={t('placeholder_step_description')}
             rows={2}
             value={item.desc}
             onChange={e => {
@@ -167,19 +169,19 @@ export default function EditRecipePage() {
 
       <input type="file" accept="image/*" multiple onChange={handleAddImages} style={{ marginBottom: '1.5rem' }} />
 
-      <label style={{ display: 'block', marginBottom: 8 }}>요리 난이도</label>
+      <label style={{ display: 'block', marginBottom: 8 }}>{t('label_difficulty')}</label>
       <StarRating rating={difficulty} onRatingChange={setDifficulty} />
       <p style={{ fontSize: '0.9rem', color: '#555', marginBottom: '1.5rem' }}>
-        난이도: {difficulty.toFixed(1)} / 5
+        {t('score_difficulty', { score: difficulty.toFixed(1) })}
       </p>
 
-      <label style={{ display: 'block', marginBottom: 8 }}>맛 평가</label>
+      <label style={{ display: 'block', marginBottom: 8 }}>{t('label_taste')}</label>
       <StarRating rating={taste} onRatingChange={setTaste} />
       <p style={{ fontSize: '0.9rem', color: '#555', marginBottom: '2rem' }}>
-        맛 점수: {taste.toFixed(1)} / 5
+        {t('score_taste', { score: taste.toFixed(1) })}
       </p>
 
-      <button onClick={handleUpdate} style={buttonStyle}>저장</button>
+      <button onClick={handleUpdate} style={buttonStyle}>{t('button_save')}</button>
     </div>
   );
 }

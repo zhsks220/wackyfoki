@@ -210,7 +210,15 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
             className="space-y-3 mb-4 max-h-60 overflow-y-auto no-scrollbar"
           >
             {steps.map((item, index) => (
-              <div key={item.id} className="relative bg-zinc-100 p-2 rounded">
+              <div
+                key={item.id}
+                className="relative p-2 rounded"
+                style={{
+                  backgroundColor: 'var(--card-bg)',
+                  color: 'var(--card-text)',
+                  border: '1px solid var(--border-color)',
+                }}
+              >
                 <img
                   src={item.preview}
                   alt={`preview-${index}`}
@@ -225,7 +233,12 @@ export default function UploadModal({ isOpen, onClose, onUploaded }) {
                     setSteps(newSteps);
                   }}
                   rows={2}
-                  className="w-full p-1 rounded border border-zinc-300 text-sm"
+                  className="w-full p-1 rounded text-sm"
+                  style={{
+                    backgroundColor: 'var(--input-bg)',
+                    color: 'var(--foreground)',
+                    border: '1px solid var(--border-color)',
+                  }}
                 />
                 <button
                   onClick={() => handleRemoveStep(item.id)}

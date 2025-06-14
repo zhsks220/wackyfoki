@@ -1,76 +1,119 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import {
-  onSnapshot,
   collection,
   query,
   orderBy,
+  startAfter,
+  getDocs,
   doc,
-  getDoc
+  getDoc,
+  limit,
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import LikeButton from './LikeButton';
 import { useTranslation } from 'next-i18next';
 
-export default function CommentDrawer({
-  recipeId,
-  open,
-  onClose,
-  user,
-  onDelete,
-}) {
+export default function CommentDrawer({ recipeId, open, onClose, user, onDelete }) {
   const { t } = useTranslation('common');
+  const containerRef = useRef(null);
+
   const [comments, setComments] = useState([]);
-  const [nicknames, setNicknames] = useState({}); // ✅ uid → 닉네임 캐시
+  const [nicknames, setNicknames] = useState({});
+  const [lastDoc, setLastDoc] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
+  const [ready, setReady] = useState(false);
 
-  /* ───────── 실시간 댓글 스트림 ───────── */
-  useEffect(() => {
-    if (!recipeId || !open) return;
+  const PAGE_SIZE = 10;
 
-    const q = query(
-      collection(db, `recipes/${recipeId}/comments`),
-      orderBy('createdAt', 'asc')
-    );
+  const fetchComments = useCallback(async () => {
+    if (!recipeId || isFetching || !hasMore) return;
+    setIsFetching(true);
 
-    const unsubscribe = onSnapshot(q, async (snap) => {
-      const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setComments(docs);
+    try {
+      const baseQuery = query(
+        collection(db, `recipes/${recipeId}/comments`),
+        orderBy('createdAt', 'asc'),
+        ...(lastDoc ? [startAfter(lastDoc)] : []),
+        limit(PAGE_SIZE)
+      );
 
-      // ✅ uid 중복 제거 후 닉네임 요청
-      const uniqueUids = [...new Set(docs.map((d) => d.uid))];
+      const snap = await getDocs(baseQuery);
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
+      setComments(prev => [...prev, ...docs]);
+      setLastDoc(snap.docs[snap.docs.length - 1]);
+
+      if (snap.docs.length < PAGE_SIZE) {
+        setHasMore(false);
+      }
+
+      const uniqueUids = [...new Set(docs.map(d => d.uid))];
       const nicknameMap = {};
       await Promise.all(
         uniqueUids.map(async (uid) => {
-          if (!uid) return;
+          if (!uid || nicknames[uid]) return;
           const userRef = doc(db, 'users', uid);
           const userSnap = await getDoc(userRef);
-          if (userSnap.exists()) {
-            nicknameMap[uid] = userSnap.data().displayName || t('anonymous');
-          } else {
-            nicknameMap[uid] = t('anonymous');
-          }
+          nicknameMap[uid] = userSnap.exists()
+            ? userSnap.data().displayName || t('anonymous')
+            : t('anonymous');
         })
       );
-      setNicknames(nicknameMap);
-    });
+      setNicknames(prev => ({ ...prev, ...nicknameMap }));
+    } catch (err) {
+      console.error('댓글 불러오기 오류:', err);
+    } finally {
+      setIsFetching(false);
+      setReady(true);
+    }
+  }, [recipeId, isFetching, hasMore, lastDoc, nicknames, t]);
 
-    return () => unsubscribe();
-  }, [recipeId, open, t]);
+  useEffect(() => {
+    if (open) {
+      setComments([]);
+      setNicknames({});
+      setLastDoc(null);
+      setHasMore(true);
+      setReady(false);
+    }
+  }, [recipeId, open]);
+
+  useEffect(() => {
+    if (open) {
+      fetchComments();
+    }
+  }, [fetchComments, open]);
+
+  const handleScroll = () => {
+    const container = containerRef.current;
+    if (!container || !hasMore || isFetching) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    if (
+      scrollTop + clientHeight >= scrollHeight - 50 &&
+      scrollHeight > clientHeight + 10
+    ) {
+      fetchComments();
+    }
+  };
 
   if (!open) return null;
 
   return (
     <div
-      className="fixed top-0 right-0 w-[400px] h-full shadow-lg z-50 p-4 overflow-y-auto"
+      ref={containerRef}
+      onScroll={handleScroll}
+      className="fixed top-0 right-0 w-[400px] h-full shadow-lg z-50 p-4 overflow-y-auto no-scrollbar"
       style={{
         backgroundColor: 'var(--card-bg)',
         color: 'var(--card-text)',
         borderLeft: '1px solid var(--border-color)',
       }}
     >
-      {/* ── 헤더 ── */}
+      {/* 헤더 */}
       <div className="flex justify-between items-start mb-4">
         <h2 className="text-lg font-bold">💬 {t('see_all_comments')}</h2>
         <button
@@ -81,8 +124,10 @@ export default function CommentDrawer({
         </button>
       </div>
 
-      {/* ── 댓글 목록 ── */}
-      {comments.length === 0 ? (
+      {/* 로딩 중 */}
+      {!ready ? (
+        <p className="text-center text-sm text-gray-400 mt-2">{t('loading')}...</p>
+      ) : comments.length === 0 ? (
         <p style={{ color: 'var(--border-color)' }}>{t('no_comment')}</p>
       ) : (
         comments.map((c) => {
@@ -118,6 +163,10 @@ export default function CommentDrawer({
             </div>
           );
         })
+      )}
+
+      {isFetching && ready && (
+        <p className="text-center text-sm text-gray-400 mt-2">{t('loading')}...</p>
       )}
     </div>
   );

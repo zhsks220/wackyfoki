@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
@@ -21,9 +22,7 @@ function StarRow({ value = 0 }) {
 }
 
 function getYouTubeEmbedUrl(url = '') {
-  const match = url.match(
-    /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&?/]+)/,
-  );
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&?/]+)/);
   const videoId = match?.[1];
   return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
 }
@@ -50,6 +49,8 @@ function formatSmartTime(date, t) {
 export default function RecipeCard({ recipe }) {
   const { t } = useTranslation('common');
   const { locale } = useRouter();
+  const textRef = useRef(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
 
   const {
     title,
@@ -79,42 +80,39 @@ export default function RecipeCard({ recipe }) {
   const avatar = authorImage && authorImage.trim() !== '' ? authorImage : '/default-avatar.png';
   const timeAgo = createdAt?.toDate?.() ? formatSmartTime(createdAt.toDate(), t) : null;
 
+  useEffect(() => {
+    if (textRef.current) {
+      const height = textRef.current.scrollHeight;
+      setIsOverflowing(height > 650); // 글+이미지 제한
+    }
+  }, [recipe]);
+
   return (
     <article
-      className="rounded-xl p-6 shadow-md space-y-4 transition-colors duration-300"
+      className="relative rounded-xl p-6 shadow-md transition-colors duration-300 space-y-4"
       style={{
         backgroundColor: 'var(--recipe-card-bg)',
         color: 'var(--recipe-card-text)',
       }}
     >
+      {/* Header */}
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-2">
-          <img
-            src={avatar}
-            alt={displayName}
-            className="w-8 h-8 rounded-full object-cover"
-          />
+          <img src={avatar} alt={displayName} className="w-8 h-8 rounded-full object-cover" />
           <div className="flex flex-col">
             <span className="font-semibold">{displayName}</span>
             {timeAgo && (
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {timeAgo}
-              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{timeAgo}</span>
             )}
           </div>
         </div>
-
         <div className="text-xs text-right space-y-1">
           <div>
-            <span className="mr-1" style={{ color: 'var(--border-color)' }}>
-              {t('difficulty')}
-            </span>
+            <span className="mr-1" style={{ color: 'var(--border-color)' }}>{t('difficulty')}</span>
             <StarRow value={difficulty} />
           </div>
           <div>
-            <span className="mr-1" style={{ color: 'var(--border-color)' }}>
-              {t('taste')}
-            </span>
+            <span className="mr-1" style={{ color: 'var(--border-color)' }}>{t('taste')}</span>
             <StarRow value={tasteValue} />
           </div>
         </div>
@@ -124,27 +122,47 @@ export default function RecipeCard({ recipe }) {
 
       {materials.length > 0 && (
         <div className="mt-2 pt-2 border-t border-[var(--border-color)] text-sm text-neutral-600 dark:text-neutral-400">
-          <span className="font-medium">{t('prepare_items')}:</span>{' '}
-          {materials.join(', ')}
+          <span className="font-medium">{t('prepare_items')}:</span> {materials.join(', ')}
         </div>
       )}
 
-      {/* ✅ 항상 출력되도록 수정 */}
-      {description && (
-        <p className="text-sm leading-relaxed whitespace-pre-wrap mt-2">
-          {description}
-        </p>
-      )}
+      {/* ✅ 글/이미지 영역 (제한됨) */}
+      <div className="relative">
+        <div
+          ref={textRef}
+          className={`${isOverflowing ? 'max-h-[450px] overflow-hidden' : ''} space-y-4`}
+        >
+          {description && (
+            <p className="text-sm leading-relaxed whitespace-pre-wrap mt-2">{description}</p>
+          )}
 
-      {minutes !== '' && (
-        <div className="text-sm" style={{ color: 'var(--border-color)' }}>
-          🕒 {t('cook_time_full', { count: minutes })}
+          {minutes !== '' && (
+            <div className="text-sm" style={{ color: 'var(--border-color)' }}>
+              🕒 {t('cook_time_full', { count: minutes })}
+            </div>
+          )}
+
+          {imageUrls.length > 0 &&
+            imageUrls.map((url, i) => (
+              <div key={i} className="space-y-2">
+                <img src={url} alt={`step-${i}`} className="w-full rounded-lg object-cover" />
+                {descriptions[i] && (
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{descriptions[i]}</p>
+                )}
+              </div>
+            ))}
         </div>
-      )}
 
+        {/* ✅ 그라데이션은 글/이미지 영역 안쪽에만 */}
+        {isOverflowing && (
+          <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[var(--recipe-card-bg)] to-transparent pointer-events-none z-10" />
+        )}
+      </div>
+
+      {/* ✅ 유튜브는 항상 완전 노출 + 글 아래 */}
       {youtubeUrl && (
         <>
-          <div className="aspect-video w-full overflow-hidden rounded-lg">
+          <div className="aspect-video w-full overflow-hidden rounded-lg mt-4 relative z-20">
             <iframe
               src={getYouTubeEmbedUrl(youtubeUrl)}
               title={title}
@@ -154,7 +172,7 @@ export default function RecipeCard({ recipe }) {
             />
           </div>
 
-          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 relative z-20">
             📌 {t('source')}:{' '}
             <a
               href={youtubeUrl}
@@ -167,22 +185,6 @@ export default function RecipeCard({ recipe }) {
           </div>
         </>
       )}
-
-      {imageUrls.length > 0 &&
-        imageUrls.map((url, i) => (
-          <div key={i} className="space-y-2">
-            <img
-              src={url}
-              alt={`step-${i}`}
-              className="w-full rounded-lg object-cover"
-            />
-            {descriptions[i] && (
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                {descriptions[i]}
-              </p>
-            )}
-          </div>
-        ))}
     </article>
   );
 }

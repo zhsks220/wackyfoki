@@ -228,5 +228,21 @@
   "load_error": "레시피 로딩 실패",
   "source": "출처",
   "youtube_link": "YouTube 영상 보기",
-  "cook_time_full": "{{count}}분 소요"
+  "cook_time_full": "{{count}}분 소요",
+  "placeholder_step_description": "해당 이미지 설명",
+  "edit_recipe_title": "✏️ 레시피 수정",
+  "label_title": "제목",
+  "label_ingredients": "준비물",
+  "label_description": "조리 과정",
+  "label_cook_time": "조리 시간 (분)",
+  "label_youtube": "YouTube 링크",
+  "label_images": "조리 이미지 및 설명",
+  "label_difficulty": "요리 난이도",
+  "label_taste": "맛 평가",
+  "score_difficulty": "난이도: {{score}} / 5",
+  "score_taste": "맛 점수: {{score}} / 5",
+  "button_save": "저장",
+  "alert_required_title_desc": "제목과 조리 과정은 필수입니다.",
+  "alert_recipe_updated": "레시피가 수정되었습니다.",
+  "alert_not_owner": "본인의 레시피만 수정할 수 있습니다."
 }
