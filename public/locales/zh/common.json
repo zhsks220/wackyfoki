@@ -235,5 +235,9 @@
   "button_save": "保存",
   "alert_required_title_desc": "标题和说明为必填。",
   "alert_recipe_updated": "食谱已更新。",
-  "alert_not_owner": "只能编辑您自己的食谱。"
+  "alert_not_owner": "只能编辑您自己的食谱。",
+
+  "meta_title": "WackyFoki - 奇特食谱",
+  "meta_description": "与全世界的用户分享你独特的食谱吧！"
+
 }

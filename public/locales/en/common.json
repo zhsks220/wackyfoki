@@ -231,5 +231,7 @@
   "button_save": "Save",
   "alert_required_title_desc": "Title and instructions are required.",
   "alert_recipe_updated": "Recipe updated.",
-  "alert_not_owner": "Only your own recipe can be edited."
+  "alert_not_owner": "Only your own recipe can be edited.",
+  "meta_title": "WackyFoki - Bizarre Recipes",
+  "meta_description": "Share your unique recipes with users from all over the world!"
 }

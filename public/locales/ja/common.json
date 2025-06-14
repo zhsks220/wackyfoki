@@ -222,5 +222,7 @@
   "button_save": "保存",
   "alert_required_title_desc": "タイトルと手順は必須です。",
   "alert_recipe_updated": "レシピが更新されました。",
-  "alert_not_owner": "自分のレシピしか編集できません。"
+  "alert_not_owner": "自分のレシピしか編集できません。",
+  "meta_title": "WackyFoki - 奇妙なレシピ",
+  "meta_description": "世界中のユーザーとあなたのユニークなレシピを共有しましょう！"
 }

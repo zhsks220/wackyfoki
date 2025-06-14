@@ -244,5 +244,8 @@
   "button_save": "저장",
   "alert_required_title_desc": "제목과 조리 과정은 필수입니다.",
   "alert_recipe_updated": "레시피가 수정되었습니다.",
-  "alert_not_owner": "본인의 레시피만 수정할 수 있습니다."
+  "alert_not_owner": "본인의 레시피만 수정할 수 있습니다.",
+
+  "meta_title": "WackyFoki - 기묘한 레시피",
+  "meta_description": "전 세계 유저들과 나만의 요리를 공유하세요!"
 }

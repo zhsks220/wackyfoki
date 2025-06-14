@@ -183,15 +183,15 @@ export default function HomePage() {
     <>
       {/* ✅ SEO & OG 메타 태그 삽입 */}
       <Head>
-        <title>WackyFoki - Recipe Feed</title>
-        <meta name="description" content="세상에 단 하나뿐인 기묘한 레시피를 공유하는 공간, WackyFoki!" />
-        <meta property="og:title" content="WackyFoki - 기묘한 레시피 피드" />
-        <meta property="og:description" content="전 세계 유저들과 나만의 요리를 공유하세요!" />
+        <title>{t('meta_title')}</title>
+        <meta name="description" content={t('meta_description')} />
+        <meta property="og:title" content={t('meta_title')} />
+        <meta property="og:description" content={t('meta_description')} />
         <meta property="og:image" content="https://wackyfoki.com/og-image.png" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="WackyFoki - 기묘한 레시피 피드" />
-        <meta name="twitter:description" content="전 세계 유저들과 나만의 요리를 공유하세요!" />
+        <meta name="twitter:title" content={t('meta_title')} />
+        <meta name="twitter:description" content={t('meta_description')} />
         <meta name="twitter:image" content="https://wackyfoki.com/og-image.png" />
       </Head>
 
