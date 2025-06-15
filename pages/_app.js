@@ -103,18 +103,18 @@ function InnerLayout({ Component, pageProps }) {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] transition-colors">
       <Head>
-        <title>WackyFoki</title>
+        <title>{t('meta_title')}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
-        <meta name="description" content="전 세계 유저들이 만든 기괴하고 독특한 레시피를 공유하는 공간, WackyFoki에서 나만의 요리를 공개해보세요!" />
-        <meta property="og:title" content="WackyFoki - 괴식 레시피 공유 플랫폼" />
-        <meta property="og:description" content="당신의 독특한 레시피를 세상에 소개해보세요!" />
-        <meta property="og:image" content="https://wackyfoki.com/og-image.png" />
-        <meta property="og:url" content="https://wackyfoki.com" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="WackyFoki - 독특한 요리 커뮤니티" />
-        <meta name="twitter:description" content="기괴한 요리? 이상한 조합? 괴식을 사랑하는 모두의 커뮤니티" />
-        <meta name="twitter:image" content="https://wackyfoki.com/og-image.png" />
+        <meta name="description"           content={t('meta_description')} />
+        <meta property="og:title"          content={t('meta_title')} />
+        <meta property="og:description"    content={t('meta_description')} />
+        <meta property="og:image"          content="https://wackyfoki.com/og-image.png" />
+        <meta property="og:url"            content="https://wackyfoki.com" />
+        <meta name="twitter:card"          content="summary_large_image" />
+        <meta name="twitter:title"         content={t('meta_title')} />
+        <meta name="twitter:description"   content={t('meta_description')} />
+        <meta name="twitter:image"         content="https://wackyfoki.com/og-image.png" />
       </Head>
 
       <div className="hidden lg:block fixed left-0 top-44 z-40 w-[160px] h-[600px] bg-gray-100 border border-gray-300 rounded shadow-md flex items-center justify-center">

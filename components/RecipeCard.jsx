@@ -3,6 +3,7 @@ import { FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
 
+/* ───── 유틸 ─────────────────────────────────────────────── */
 function StarRow({ value = 0 }) {
   const v = Number(value) || 0;
   return (
@@ -22,121 +23,110 @@ function StarRow({ value = 0 }) {
 }
 
 function getYouTubeEmbedUrl(url = '') {
-  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&?/]+)/);
-  const videoId = match?.[1];
-  return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&?/]+)/);
+  return m?.[1] ? `https://www.youtube.com/embed/${m[1]}` : '';
 }
 
 function formatSmartTime(date, t) {
-  const now = new Date();
-  const diff = now - date;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const now   = new Date();
+  const diff  = now - date;
+  const min   = Math.floor(diff / 60000);
+  const hrs   = Math.floor(diff / 3600000);
+  const days  = Math.floor(diff / 86400000);
   const weeks = Math.floor(days / 7);
-  const months = Math.floor(days / 30);
-  const years = Math.floor(days / 365);
+  const mon   = Math.floor(days / 30);
+  const yrs   = Math.floor(days / 365);
 
-  if (years >= 1) return t('time_year', { count: years });
-  if (months >= 1) return t('time_month', { count: months });
-  if (weeks >= 1) return t('time_week', { count: weeks });
-  if (days >= 1) return t('time_day', { count: days });
-  if (hours >= 1) return t('time_hour', { count: hours });
-  if (minutes >= 1) return t('time_minute', { count: minutes });
+  if (yrs  >= 1) return t('time_year',   { count: yrs  });
+  if (mon  >= 1) return t('time_month',  { count: mon  });
+  if (weeks>= 1) return t('time_week',   { count: weeks});
+  if (days >= 1) return t('time_day',    { count: days });
+  if (hrs  >= 1) return t('time_hour',   { count: hrs  });
+  if (min  >= 1) return t('time_minute', { count: min  });
   return t('time_just_now');
 }
 
+/* ───── 메인 컴포넌트 ─────────────────────────────────────── */
 export default function RecipeCard({ recipe }) {
-  const { t } = useTranslation('common');
-  const { locale } = useRouter();
-  const textRef = useRef(null);
-  const [isOverflowing, setIsOverflowing] = useState(false);
+  const { t }      = useTranslation('common');
+  const textRef    = useRef(null);
+  const [overflow, setOverflow] = useState(false);
 
   const {
     title,
     description,
     descriptions = [],
-    imageUrls = [],
+    imageUrls    = [],
     youtubeUrl,
     cookingTime,
     cookTime,
-    difficulty = 0,
+    difficulty   = 0,
     rating,
     taste,
     authorName,
     authorImage,
     createdAt,
-    ingredients = '',
-    materials: _materials,
+    ingredients  = '',
+    materials: _mat,
   } = recipe;
 
-  const materials = Array.isArray(_materials)
-    ? _materials
-    : ingredients.split(',').map((i) => i.trim()).filter(Boolean);
+  /* ------- 파생 데이터 -------- */
+  const materials  = Array.isArray(_mat)
+    ? _mat
+    : ingredients.split(',').map(s => s.trim()).filter(Boolean);
 
-  const minutes = cookingTime ?? cookTime ?? '';
+  const minutes    = cookingTime ?? cookTime ?? '';
   const tasteValue = rating ?? taste ?? 0;
-  const displayName = authorName || t('anonymous');
-  const avatar = authorImage && authorImage.trim() !== '' ? authorImage : '/default-avatar.png';
-  const timeAgo = createdAt?.toDate?.() ? formatSmartTime(createdAt.toDate(), t) : null;
+  const name       = authorName || t('anonymous');
+  const avatar     = authorImage?.trim() ? authorImage : '/default-avatar.png';
+  const timeAgo    = createdAt?.toDate?.() ? formatSmartTime(createdAt.toDate(), t) : null;
 
-  // ✅ 이미지 로딩 감지하여 overflow 체크
+  /* ------- overflow 체크 -------- */
   useEffect(() => {
-    const checkOverflow = () => {
-      if (textRef.current) {
-        const height = textRef.current.scrollHeight;
-        setIsOverflowing(height > 650);
-      }
+    const check = () => {
+      if (textRef.current) setOverflow(textRef.current.scrollHeight > 650);
     };
 
-    const images = textRef.current?.querySelectorAll('img') || [];
-    let loadedCount = 0;
+    const imgs = textRef.current?.querySelectorAll('img') || [];
+    if (!imgs.length) return check();
 
-    if (images.length === 0) {
-      checkOverflow();
-    } else {
-      images.forEach((img) => {
-        if (img.complete) {
-          loadedCount++;
-          if (loadedCount === images.length) checkOverflow();
-        } else {
-          const onLoadOrError = () => {
-            loadedCount++;
-            if (loadedCount === images.length) checkOverflow();
-          };
-          img.addEventListener('load', onLoadOrError);
-          img.addEventListener('error', onLoadOrError);
-        }
-      });
-    }
+    let done = 0;
+    imgs.forEach(img => {
+      const cb = () => { if (++done === imgs.length) check(); };
+      img.complete ? cb() : (img.onload = img.onerror = cb);
+    });
   }, [recipe]);
 
+  /* ── render ────────────────────────────────────────────── */
   return (
     <article
-      className="relative rounded-xl p-6 shadow-md transition-colors duration-300 space-y-4"
-      style={{
-        backgroundColor: 'var(--recipe-card-bg)',
-        color: 'var(--recipe-card-text)',
-      }}
+      className="relative rounded-xl p-6 shadow-md transition-colors duration-300 space-y-4 recipe-card"
     >
-      {/* Header */}
+      {/* 헤더 */}
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-2">
-          <img src={avatar} alt={displayName} className="w-8 h-8 rounded-full object-cover" />
+          <img src={avatar} alt={name} className="w-8 h-8 rounded-full object-cover" />
           <div className="flex flex-col">
-            <span className="font-semibold">{displayName}</span>
+            <span className="font-semibold">{name}</span>
             {timeAgo && (
-              <span className="text-xs text-gray-500 dark:text-gray-400">{timeAgo}</span>
+              <span style={{ color: 'var(--border-color)', fontSize: '0.75rem' }}>
+                {timeAgo}
+              </span>
             )}
           </div>
         </div>
-        <div className="text-xs text-right space-y-1">
+
+        <div style={{ fontSize: '0.75rem', textAlign: 'right', lineHeight: 1.2 }}>
           <div>
-            <span className="mr-1" style={{ color: 'var(--border-color)' }}>{t('difficulty')}</span>
+            <span style={{ marginRight: 4, color: 'var(--border-color)' }}>
+              {t('difficulty')}
+            </span>
             <StarRow value={difficulty} />
           </div>
           <div>
-            <span className="mr-1" style={{ color: 'var(--border-color)' }}>{t('taste')}</span>
+            <span style={{ marginRight: 4, color: 'var(--border-color)' }}>
+              {t('taste')}
+            </span>
             <StarRow value={tasteValue} />
           </div>
         </div>
@@ -145,16 +135,19 @@ export default function RecipeCard({ recipe }) {
       <h2 className="text-xl font-bold">{title}</h2>
 
       {materials.length > 0 && (
-        <div className="mt-2 pt-2 border-t border-[var(--border-color)] text-sm text-neutral-600 dark:text-neutral-400">
+        <div
+          className="mt-2 pt-2 text-sm"
+          style={{ borderTop: '1px solid var(--border-color)', color: 'var(--border-color)' }}
+        >
           <span className="font-medium">{t('prepare_items')}:</span> {materials.join(', ')}
         </div>
       )}
 
-      {/* ✅ 글/이미지 영역 (제한됨) */}
+      {/* 본문 */}
       <div className="relative">
         <div
           ref={textRef}
-          className={`${isOverflowing ? 'max-h-[450px] overflow-hidden' : ''} space-y-4`}
+          className={overflow ? 'max-h-[450px] overflow-hidden space-y-4' : 'space-y-4'}
         >
           {description && (
             <p className="text-sm leading-relaxed whitespace-pre-wrap mt-2">{description}</p>
@@ -166,24 +159,29 @@ export default function RecipeCard({ recipe }) {
             </div>
           )}
 
-          {imageUrls.length > 0 &&
-            imageUrls.map((url, i) => (
-              <div key={i} className="space-y-2">
-                <img src={url} alt={`step-${i}`} className="w-full rounded-lg object-cover" />
-                {descriptions[i] && (
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{descriptions[i]}</p>
-                )}
-              </div>
-            ))}
+          {imageUrls.map((url, i) => (
+            <div key={i} className="space-y-2">
+              <img src={url} alt={`step-${i}`} className="w-full rounded-lg object-cover" />
+              {descriptions[i] && (
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                  {descriptions[i]}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
 
-        {/* ✅ 그라데이션은 글/이미지 영역 안쪽에만 */}
-        {isOverflowing && (
-          <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[var(--recipe-card-bg)] to-transparent pointer-events-none z-10" />
+        {overflow && (
+          <div
+            className="absolute bottom-0 left-0 w-full h-24 pointer-events-none z-10"
+            style={{
+              background: 'linear-gradient(to top, var(--recipe-card-bg), transparent)',
+            }}
+          />
         )}
       </div>
 
-      {/* ✅ 유튜브는 항상 완전 노출 + 글 아래 */}
+      {/* YouTube */}
       {youtubeUrl && (
         <>
           <div className="aspect-video w-full overflow-hidden rounded-lg mt-4 relative z-20">
@@ -196,13 +194,17 @@ export default function RecipeCard({ recipe }) {
             />
           </div>
 
-          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 relative z-20">
-            📌 {t('source')}:{' '}
+          <div
+            className="mt-2 text-sm relative z-20"
+            style={{ color: 'var(--border-color)' }}
+          >
+            📌 {t('source')}:&nbsp;
             <a
               href={youtubeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline hover:text-blue-600"
+              className="underline hover:brightness-125"
+              style={{ color: 'var(--card-text)' }}
             >
               {t('youtube_link')}
             </a>

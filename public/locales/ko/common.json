@@ -247,5 +247,11 @@
   "alert_not_owner": "본인의 레시피만 수정할 수 있습니다.",
 
   "meta_title": "WackyFoki - 기묘한 레시피",
-  "meta_description": "전 세계 유저들과 나만의 요리를 공유하세요!"
+  "meta_description": "전 세계 유저들과 나만의 요리를 공유하세요!",
+  "top_comments"   : "인기순",
+  "newest_first"   : "최신순",
+  "write_comment"  : "댓글을 입력하세요",
+  "write_reply"    : "답글을 입력하세요",
+  "reply"          : "답글",      
+  "hide_replies"   : "답글 숨기기"
 }

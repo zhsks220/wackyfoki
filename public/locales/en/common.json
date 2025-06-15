@@ -233,5 +233,11 @@
   "alert_recipe_updated": "Recipe updated.",
   "alert_not_owner": "Only your own recipe can be edited.",
   "meta_title": "WackyFoki - Bizarre Recipes",
-  "meta_description": "Share your unique recipes with users from all over the world!"
+  "meta_description": "Share your unique recipes with users from all over the world!",
+  "top_comments"  : "Top comments",
+  "newest_first"  : "Newest first",
+  "write_comment" : "Write a comment",
+  "write_reply"   : "Write a reply",
+  "reply"         : "Reply",
+  "hide_replies"  : "Hide replies"
 }

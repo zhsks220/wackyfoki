@@ -15,6 +15,10 @@
   --footer-bg:          #e5e7eb;
   --border-color:       #696969;
   --input-bg:           #e5e7eb;
+
+  --hover-bg:           rgba(0,0,0,.04);   /* 버튼·아이콘 hover */
+  --dropdown-bg:        #ffffff;           /* 모든 드롭다운 배경 */
+  --icon-muted:         #8d8d8d;           /* 댓글·좋아요 등 흐린 아이콘 */
 }
 
 .dark {
@@ -31,6 +35,10 @@
   --footer-bg:          #111111;
   --border-color:       #747474;
   --input-bg:           #2a2a2a;
+
+  --hover-bg:           rgba(255,255,255,.06);
+  --dropdown-bg:        #262626;
+  --icon-muted:         #7a7a7a;
 }
 
 /* ✅ 반응형 폰트 크기 */

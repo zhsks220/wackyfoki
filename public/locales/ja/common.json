@@ -224,5 +224,11 @@
   "alert_recipe_updated": "レシピが更新されました。",
   "alert_not_owner": "自分のレシピしか編集できません。",
   "meta_title": "WackyFoki - 奇妙なレシピ",
-  "meta_description": "世界中のユーザーとあなたのユニークなレシピを共有しましょう！"
+  "meta_description": "世界中のユーザーとあなたのユニークなレシピを共有しましょう！",
+  "top_comments"  : "人気順",
+  "newest_first"  : "新しい順",
+  "write_comment" : "コメントを入力してください",
+  "write_reply"   : "返信を入力してください",
+  "reply"         : "返信",
+  "hide_replies"  : "返信を隠す"
 }

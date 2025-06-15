@@ -238,6 +238,15 @@
   "alert_not_owner": "只能编辑您自己的食谱。",
 
   "meta_title": "WackyFoki - 奇特食谱",
-  "meta_description": "与全世界的用户分享你独特的食谱吧！"
+  "meta_description": "与全世界的用户分享你独特的食谱吧！",
+  
+  "top_comments"  : "热门评论",
+  "newest_first"  : "最新优先",
+  "write_comment" : "请输入评论",
+  "write_reply"   : "请输入回复",
+  "reply"         : "回复",
+  "hide_replies"  : "收起回复"
+
+
 
 }
