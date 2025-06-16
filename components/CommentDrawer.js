@@ -181,7 +181,11 @@ export default function CommentDrawer({ recipeId, open, onClose, user }) {
   /* 댓글 추가 */
   const handleAddComment = async () => {
     const content = newComment.trim();
-    if (!content || !user) return;
+    if (!user) {          // 🟢 로그인 안 된 경우
+      alert(t('login_required'));
+      return;
+    }
+    if (!content) return;
 
     try {
       const docRef = await addDoc(
@@ -221,7 +225,11 @@ export default function CommentDrawer({ recipeId, open, onClose, user }) {
   /* 답글 추가 */
   const handleReplySubmit = async (parentId) => {
     const content = (replyInput[parentId] || '').trim();
-    if (!content || !user) return;
+    if (!user) {
+      alert(t('login_required'));   // 🟢 비로그인 경고
+      return;
+    }
+    if (!content) return;
 
     try {
       const colRef = collection(
