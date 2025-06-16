@@ -53,7 +53,7 @@ export default function RecipeCard({ recipe }) {
   const [overflow, setOverflow] = useState(false);
 
   /* 🔸 미리보기 최대 높이(px) – 한 군데서만 수정 */
-  const PREVIEW_LIMIT = 480;
+  const PREVIEW_LIMIT = 440;
 
   const {
     title,
@@ -183,14 +183,7 @@ export default function RecipeCard({ recipe }) {
         </div>
 
         {overflow && (
-          <div
-            className="absolute bottom-0 left-0 w-full h-24 pointer-events-none z-10"
-            style={{
-              background: 'linear-gradient(to top, var(--recipe-card-bg), transparent)',
-              WebkitBackgroundImage:
-                'linear-gradient(to top, var(--recipe-card-bg), transparent)',
-            }}
-          />
+          <div className="card-fade absolute bottom-0 left-0 w-full h-24 pointer-events-none z-10" />
         )}
       </div>
 

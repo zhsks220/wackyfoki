@@ -16,9 +16,9 @@
   --border-color:       #696969;
   --input-bg:           #e5e7eb;
 
-  --hover-bg:           rgba(0,0,0,.04);   /* 버튼·아이콘 hover */
-  --dropdown-bg:        #ffffff;           /* 모든 드롭다운 배경 */
-  --icon-muted:         #8d8d8d;           /* 댓글·좋아요 등 흐린 아이콘 */
+  --hover-bg:           rgba(0,0,0,.04);
+  --dropdown-bg:        #ffffff;
+  --icon-muted:         #8d8d8d;
 }
 
 .dark {
@@ -42,98 +42,70 @@
 }
 
 /* ✅ 반응형 폰트 크기 */
-html {
-  font-size: 16px;
-}
-@media (max-width: 768px) {
-  html { font-size: 15px; }
-}
-@media (max-width: 480px) {
-  html { font-size: 14px; }
-}
+html { font-size: 16px; }
+@media (max-width: 768px) { html { font-size: 15px; } }
+@media (max-width: 480px) { html { font-size: 14px; } }
 
 body {
   background:  var(--background);
   color:       var(--foreground);
-  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+  font-family: 'Inter','Noto Sans KR',sans-serif;
   line-height: 1.6;
   word-break:  keep-all;
-  margin:      0;
-  padding:     0;
-  transition:  background 0.3s, color 0.3s;
+  margin: 0;
+  padding: 0;
+  transition: background .3s,color .3s;
 }
 
-/* ✅ 피드용 카드 (외곽 카드) */
-.feed-card,
-.post-card {
+/* ✅ 카드 */
+.feed-card,.post-card{
   background-color: var(--card-bg);
   color:            var(--card-text);
-  transition:       background 0.3s, color 0.3s;
+  transition:       background .3s,color .3s;
 }
-
-/* ✅ 레시피(내부) 카드 전용 */
-.recipe-card {
+.recipe-card{
   background-color: var(--recipe-card-bg);
   color:            var(--recipe-card-text);
-  transition:       background 0.3s, color 0.3s;
+  transition:       background .3s,color .3s;
 }
 
-/* ✅ 공통 요소 색상 예시 */
-input,
-textarea,
-select {
-  background-color: var(--input-bg);
-  color:            var(--foreground);
-  border:           1px solid var(--border-color);
-  transition:       background 0.3s, color 0.3s;
+/* ✅ 공통 입력·버튼 */
+input,textarea,select{
+  background: var(--input-bg);
+  color:      var(--foreground);
+  border:1px solid var(--border-color);
+  transition: background .3s,color .3s;
+}
+button{transition: background .3s,color .3s;}
+
+/* ✅ 댓글 drawer 열렸을 때 메뉴 숨김 */
+body.comment-open .dropdown-menu{display:none!important}
+
+/* ✅ 스크롤바 숨김 */
+.no-scrollbar::-webkit-scrollbar{display:none!important}
+.no-scrollbar{-ms-overflow-style:none!important;scrollbar-width:none!important}
+
+/* ✅ Next.js focus-boundary 클릭 차단 해제 */
+[data-nextjs-scroll-focus-boundary]{
+  pointer-events:none!important;
+  touch-action:none!important;
 }
 
-button {
-  transition: background 0.3s, color 0.3s;
-}
+/* ──────────────────────────────────────────── */
+/* ✅ RecipeCard 미리보기용 그라데이션 오버레이 */
+.card-fade{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  height:6rem;                    /* h-24 ≒ 96 px */
+  pointer-events:none;
+  z-index:20;
 
-/* ✅ 댓글 전체 보기 열렸을 때 메뉴 숨김 */
-body.comment-open .dropdown-menu {
-  display: none !important;
+  /* 💡 WebKit 우선 → 표준 순서로 두 줄 선언  */
+  background:-webkit-linear-gradient(bottom,
+            var(--recipe-card-bg) 0%,
+            rgba(0,0,0,0) 100%);
+  background:linear-gradient(to top,
+            var(--recipe-card-bg) 0%,
+            transparent 100%);
 }
-
-/* ✅ 스크롤바 숨김: 카테고리 버튼 스크롤 등에서 사용 */
-.no-scrollbar::-webkit-scrollbar {
-  display: none !important;
-}
-.no-scrollbar {
-  -ms-overflow-style: none !important;  /* IE & Edge */
-  scrollbar-width: none !important;     /* Firefox */
-}
-
-/* ✅ Next.js focus-boundary 오버레이 클릭 차단 해제 */
-[data-nextjs-scroll-focus-boundary] {
-  pointer-events: none !important;
-  touch-action: none !important;
-}
-
-/* ──────────────────────────────────────────────── */
-/* ✅ RecipeCard 미리보기용 그라데이션 오버레이   */
-/*    (모바일 Safari/Android WebView 대응 포함)   */
-.card-fade {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 6rem;                 /* Tailwind 기준 h-24 ≒ 96 px */
-  pointer-events: none;
-  z-index: 20;
-
-  /* 표준 문법 */
-  background: linear-gradient(
-              to top,
-              var(--recipe-card-bg) 0%,
-              transparent 100%);
-
-  /* 모바일 WebKit 예외 대응 */
-  background: -webkit-linear-gradient(
-              bottom,
-              var(--recipe-card-bg) 0%,
-              rgba(0,0,0,0) 100%);
-}
-/* ──────────────────────────────────────────────── */
+/* ──────────────────────────────────────────── */
