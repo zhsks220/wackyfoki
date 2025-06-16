@@ -100,7 +100,7 @@ export default function RecipeCard({ recipe }) {
   /* ── render ────────────────────────────────────────────── */
   return (
     <article
-      className="relative rounded-xl p-6 shadow-md transition-colors duration-300 space-y-4 recipe-card"
+      className="relative rounded-xl p-6 shadow-md transition-colors duration-300 space-y-4 recipe-card overflow-hidden"
     >
       {/* 헤더 */}
       <div className="flex justify-between items-start">
@@ -176,6 +176,8 @@ export default function RecipeCard({ recipe }) {
             className="absolute bottom-0 left-0 w-full h-24 pointer-events-none z-10"
             style={{
               background: 'linear-gradient(to top, var(--recipe-card-bg), transparent)',
+              WebkitBackgroundImage:
+                'linear-gradient(to top, var(--recipe-card-bg), transparent)',
             }}
           />
         )}
