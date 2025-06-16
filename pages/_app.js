@@ -115,6 +115,18 @@ function InnerLayout({ Component, pageProps }) {
         <meta name="twitter:title"         content={t('meta_title')} />
         <meta name="twitter:description"   content={t('meta_description')} />
         <meta name="twitter:image"         content="https://wackyfoki.com/og-image.png" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type":    "Organization",
+              name:       "WackyFoki",
+              url:        "https://wackyfoki.com",
+              logo:       "https://wackyfoki.com/logo.png"
+            })
+          }}
+        />
       </Head>
 
       <div className="hidden lg:block fixed left-0 top-44 z-40 w-[160px] h-[600px] bg-gray-100 border border-gray-300 rounded shadow-md flex items-center justify-center">
