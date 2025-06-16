@@ -52,6 +52,9 @@ export default function RecipeCard({ recipe }) {
   const textRef    = useRef(null);
   const [overflow, setOverflow] = useState(false);
 
+  /* 🔸 미리보기 최대 높이(px) – 한 군데서만 수정 */
+  const PREVIEW_LIMIT = 480;
+
   const {
     title,
     description,
@@ -84,7 +87,7 @@ export default function RecipeCard({ recipe }) {
   /* ------- overflow 체크 -------- */
   useEffect(() => {
     const check = () => {
-      if (textRef.current) setOverflow(textRef.current.scrollHeight > 650);
+      if (textRef.current) setOverflow(textRef.current.scrollHeight > PREVIEW_LIMIT);
     };
 
     const imgs = textRef.current?.querySelectorAll('img') || [];
@@ -100,7 +103,11 @@ export default function RecipeCard({ recipe }) {
   /* ── render ────────────────────────────────────────────── */
   return (
     <article
-      className="relative rounded-xl p-6 shadow-md transition-colors duration-300 space-y-4 recipe-card overflow-hidden"
+      className="relative rounded-xl p-6 shadow-md 
+                 transition-colors duration-300 space-y-4 recipe-card
+                 overflow-hidden
+                 w-full max-w-[680px] mx-auto
+                 "
     >
       {/* 헤더 */}
       <div className="flex justify-between items-start">
@@ -147,7 +154,11 @@ export default function RecipeCard({ recipe }) {
       <div className="relative">
         <div
           ref={textRef}
-          className={overflow ? 'max-h-[450px] overflow-hidden space-y-4' : 'space-y-4'}
+          className={
+            overflow
+              ? `max-h-[${PREVIEW_LIMIT}px] overflow-hidden space-y-4`
+              : 'space-y-4'
+          }
         >
           {description && (
             <p className="text-sm leading-relaxed whitespace-pre-wrap mt-2">{description}</p>

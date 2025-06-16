@@ -111,3 +111,29 @@ body.comment-open .dropdown-menu {
   pointer-events: none !important;
   touch-action: none !important;
 }
+
+/* ──────────────────────────────────────────────── */
+/* ✅ RecipeCard 미리보기용 그라데이션 오버레이   */
+/*    (모바일 Safari/Android WebView 대응 포함)   */
+.card-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6rem;                 /* Tailwind 기준 h-24 ≒ 96 px */
+  pointer-events: none;
+  z-index: 20;
+
+  /* 표준 문법 */
+  background: linear-gradient(
+              to top,
+              var(--recipe-card-bg) 0%,
+              transparent 100%);
+
+  /* 모바일 WebKit 예외 대응 */
+  background: -webkit-linear-gradient(
+              bottom,
+              var(--recipe-card-bg) 0%,
+              rgba(0,0,0,0) 100%);
+}
+/* ──────────────────────────────────────────────── */
