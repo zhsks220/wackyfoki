@@ -196,7 +196,10 @@ export default function RecipeDetailPage() {
 
         {/* ---------------- 본문 ---------------- */}
         <hr style={{ borderColor: 'var(--border-color)', margin: '1.5rem 0' }} />
-        <p><strong>{t('prepare_items')}:</strong><br />{recipe.ingredients || t('not_entered')}</p>
+        <p style={{ whiteSpace: 'pre-wrap' }}>
+          <strong>{t('prepare_items')}:</strong><br />
+          {recipe.ingredients || t('not_entered')}
+        </p>
         <hr style={{ borderColor: 'var(--border-color)', margin: '1.5rem 0' }} />
         <p>🕒 {recipe.cookTime ? t('cook_time_full', { count: recipe.cookTime }) : t('not_entered')}</p>
 

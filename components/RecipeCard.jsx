@@ -146,7 +146,12 @@ export default function RecipeCard({ recipe }) {
           className="mt-2 pt-2 text-sm"
           style={{ borderTop: '1px solid var(--border-color)', color: 'var(--border-color)' }}
         >
-          <span className="font-medium">{t('prepare_items')}:</span> {materials.join(', ')}
+          <span className="font-medium">{t('prepare_items')}:</span>
+          <ul className="list-disc list-inside mt-1">
+            {materials.map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
+          </ul>
         </div>
       )}
 
