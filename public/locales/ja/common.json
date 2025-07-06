@@ -230,5 +230,6 @@
   "write_comment" : "コメントを入力してください",
   "write_reply"   : "返信を入力してください",
   "reply"         : "返信",
+  "placeholder_description": "調理手順を入力してください",
   "hide_replies"  : "返信を隠す"
 }

@@ -253,5 +253,6 @@
   "write_comment"  : "댓글을 입력하세요",
   "write_reply"    : "답글을 입력하세요",
   "reply"          : "답글",      
+  "placeholder_description": "조리 과정을 입력하세요",
   "hide_replies"   : "답글 숨기기"
 }

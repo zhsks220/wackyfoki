@@ -245,6 +245,7 @@
   "write_comment" : "请输入评论",
   "write_reply"   : "请输入回复",
   "reply"         : "回复",
+  "placeholder_description": "请输入烹饪步骤",
   "hide_replies"  : "收起回复"
 
 

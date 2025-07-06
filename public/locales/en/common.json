@@ -239,5 +239,6 @@
   "write_comment" : "Write a comment",
   "write_reply"   : "Write a reply",
   "reply"         : "Reply",
+  "placeholder_description": "Enter the cooking steps",
   "hide_replies"  : "Hide replies"
 }
