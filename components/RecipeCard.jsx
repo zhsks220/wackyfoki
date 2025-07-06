@@ -141,16 +141,18 @@ export default function RecipeCard({ recipe }) {
 
       <h2 className="text-xl font-bold">{title}</h2>
 
-      {materials.length > 0 && (
+      {ingredients && (
         <div
           className="mt-2 pt-2 text-sm"
           style={{ borderTop: '1px solid var(--border-color)', color: 'var(--border-color)' }}
         >
           <span className="font-medium">{t('prepare_items')}:</span>
-          <ul className="list-disc list-inside mt-1">
-            {materials.map((item, idx) => (
-              <li key={idx}>{item}</li>
-            ))}
+          <ul className="list-disc list-inside mt-1 whitespace-pre-wrap">
+            {ingredients
+              .split('\n')
+              .map((item, idx) =>
+                item.trim() && <li key={idx}>{item}</li>
+              )}
           </ul>
         </div>
       )}
