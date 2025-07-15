@@ -34,7 +34,7 @@ function formatSmartTime(date, t) {
 /* ===========================================================
    댓글 · 대댓글 Drawer
 =========================================================== */
-export default function CommentDrawer({ recipeId, open, onClose, user }) {
+export default function CommentDrawer({ recipeId, open, onClose, user, onCommentUpdate }) {
   const { t } = useTranslation('common');
 
   /* ---------- refs ---------- */
@@ -215,6 +215,9 @@ export default function CommentDrawer({ recipeId, open, onClose, user }) {
       /* 전체 개수 +1 */
       setTotalCount(c => c + 1);
 
+      /* 부모 컴포넌트에 업데이트 알림 */
+      if (onCommentUpdate) onCommentUpdate();
+
       resetState();
       fetchComments();
     } catch (e) {
@@ -314,6 +317,9 @@ export default function CommentDrawer({ recipeId, open, onClose, user }) {
         return rest;
       });
       setTotalCount(c => (c > 0 ? c - 1 : 0));
+      
+      /* 부모 컴포넌트에 업데이트 알림 */
+      if (onCommentUpdate) onCommentUpdate();
     } catch (e) {
       console.error('댓글 삭제 오류:', e);
     }

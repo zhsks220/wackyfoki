@@ -234,6 +234,7 @@
   "alert_not_owner": "Only your own recipe can be edited.",
   "meta_title": "WackyFoki - Bizarre Recipes",
   "meta_description": "Share your unique recipes with users from all over the world!",
+  "site_description": "A community for sharing weird and unique recipes from around the world",
   "top_comments"  : "Top comments",
   "newest_first"  : "Newest first",
   "write_comment" : "Write a comment",

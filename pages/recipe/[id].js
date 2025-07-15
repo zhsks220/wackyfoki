@@ -1,6 +1,4 @@
 // pages/recipe/[id].js
-'use client';
-
 import { useRouter } from 'next/router';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Head from 'next/head';
@@ -17,6 +15,7 @@ import {
 import LikeButton     from '@/components/LikeButton';
 import CommentDrawer  from '@/components/CommentDrawer';
 import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 /* ------------------------------------------------------------------ */
 /* 유틸 컴포넌트들                                                     */
@@ -47,18 +46,18 @@ function extractYouTubeId(url = '') {
 /* ------------------------------------------------------------------ */
 /* 상세 페이지                                                         */
 /* ------------------------------------------------------------------ */
-export default function RecipeDetailPage() {
+export default function RecipeDetailPage({ initialRecipe, initialComments, locale }) {
   const router           = useRouter();
   const { id }           = router.query;
   const { user }         = useUser();
   const { t }            = useTranslation('common');
 
   /* ---------------- state ---------------- */
-  const [recipe,  setRecipe]   = useState(null);
-  const [loading, setLoading]  = useState(true);
+  const [recipe,  setRecipe]   = useState(initialRecipe);
+  const [loading, setLoading]  = useState(false);
 
-  const [previewComments, setPreview] = useState([]);  // 미리보기 3개
-  const [commentTotal,    setTotal]   = useState(0);   // 총 개수
+  const [previewComments, setPreview] = useState(initialComments.slice(0, 3));  // 미리보기 3개
+  const [commentTotal,    setTotal]   = useState(initialComments.length);   // 총 개수
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showDrawer,   setShowDrawer]   = useState(false);
@@ -115,7 +114,19 @@ export default function RecipeDetailPage() {
   }, [id, t]);
 
   /* ---------------- effects ---------------- */
-  useEffect(() => { fetchRecipe(); fetchComments(); }, [fetchRecipe, fetchComments]);
+  // 클라이언트 사이드에서 데이터 리프레시가 필요한 경우
+  useEffect(() => {
+    // 초기 데이터가 없을 때만 fetch
+    if (!initialRecipe) {
+      fetchRecipe();
+      fetchComments();
+    }
+  }, [id, initialRecipe]);
+  
+  // 댓글 업데이트를 위한 리프레시 함수
+  const refreshComments = useCallback(() => {
+    fetchComments();
+  }, [fetchComments]);
 
   /* dropdown 외부 클릭 닫기 */
   useEffect(() => {
@@ -146,7 +157,51 @@ export default function RecipeDetailPage() {
 
   return (
     <>
-      <Head><title>{recipe.title} - WackyFoki</title></Head>
+      <Head>
+        <title>{recipe?.title || t('loading')} - WackyFoki</title>
+        <meta name="description" content={recipe?.description || t('site_description')} />
+        <meta property="og:title" content={`${recipe?.title || t('loading')} - WackyFoki`} />
+        <meta property="og:description" content={recipe?.description || t('site_description')} />
+        <meta property="og:type" content="article" />
+        {recipe?.imageUrls?.[0] && (
+          <meta property="og:image" content={recipe.imageUrls[0]} />
+        )}
+        <meta property="og:url" content={`https://wackyfoki.com/${locale}/recipe/${id}`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        
+        {/* 구조화된 데이터 (Schema.org) */}
+        {recipe && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Recipe",
+                "name": recipe.title,
+                "description": recipe.description,
+                "image": recipe.imageUrls || [],
+                "author": {
+                  "@type": "Person",
+                  "name": recipe.authorName || t('anonymous')
+                },
+                "datePublished": recipe.createdAt ? new Date(recipe.createdAt).toISOString() : undefined,
+                "prepTime": recipe.cookTime ? `PT${recipe.cookTime}M` : undefined,
+                "recipeIngredient": recipe.ingredients ? recipe.ingredients.split('\n').filter(i => i.trim()) : [],
+                "recipeInstructions": recipe.descriptions || [],
+                "aggregateRating": {
+                  "@type": "AggregateRating",
+                  "ratingValue": recipe.taste || 0,
+                  "ratingCount": recipe.likes || 0
+                },
+                "recipeYield": "1 serving",
+                "keywords": "korean recipe, 한국 요리, wackyfoki",
+                "recipeCategory": "main dish",
+                "recipeCuisine": "Korean"
+              })
+            }}
+          />
+        )}
+      </Head>
 
       <div style={{ padding: '2rem', maxWidth: 800, margin: '0 auto' }}>
 
@@ -360,6 +415,7 @@ export default function RecipeDetailPage() {
           onClose={() => setShowDrawer(false)}
           recipeId={recipe.id}
           user={user}
+          onCommentUpdate={refreshComments}
         />
       )}
     </>
@@ -379,3 +435,105 @@ const menuStyle = {
   cursor: 'pointer',
   fontSize: '0.95rem'
 };
+
+/* ------------------------------------------------------------------ */
+/* Server Side Props                                                    */
+/* ------------------------------------------------------------------ */
+export async function getServerSideProps({ params, locale }) {
+  const { id } = params;
+  
+  try {
+    // 레시피 데이터 가져오기
+    const recipeSnap = await getDoc(doc(db, 'recipes', id));
+    
+    if (!recipeSnap.exists()) {
+      return {
+        notFound: true,
+      };
+    }
+    
+    const recipeData = recipeSnap.data();
+    let authorName = recipeData.authorName || 'anonymous';
+    let authorImage = recipeData.authorImage || '/default-avatar.png';
+    
+    // 작성자 정보 가져오기
+    if (recipeData.uid) {
+      try {
+        const userSnap = await getDoc(doc(db, 'users', recipeData.uid));
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          authorName = userData.displayName || authorName;
+          authorImage = userData.profileImage || authorImage;
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    }
+    
+    const recipe = {
+      id: recipeSnap.id,
+      ...recipeData,
+      authorName,
+      authorImage,
+      // Firestore timestamp 변환
+      createdAt: recipeData.createdAt?.toDate?.()?.toISOString() || null,
+      updatedAt: recipeData.updatedAt?.toDate?.()?.toISOString() || null,
+    };
+    
+    // 댓글 데이터 가져오기
+    const commentsSnap = await getDocs(collection(db, 'recipes', id, 'comments'));
+    const comments = await Promise.all(
+      commentsSnap.docs.map(async (docSnap) => {
+        const commentData = docSnap.data();
+        let displayName = 'anonymous';
+        
+        if (commentData.uid) {
+          try {
+            const userSnap = await getDoc(doc(db, 'users', commentData.uid));
+            if (userSnap.exists()) {
+              displayName = userSnap.data().displayName || displayName;
+            }
+          } catch (error) {
+            console.error('Error fetching comment user:', error);
+          }
+        }
+        
+        return {
+          id: docSnap.id,
+          ...commentData,
+          displayName,
+          // Firestore timestamp 변환
+          createdAt: commentData.createdAt?.toDate?.()?.toISOString() || null,
+        };
+      })
+    );
+    
+    // 댓글 정렬 (좋아요 내림차순 → 최신순)
+    const sortedComments = comments.sort((a, b) => {
+      const likeDiff = (b.likes || 0) - (a.likes || 0);
+      if (likeDiff !== 0) return likeDiff;
+      
+      // createdAt이 ISO string이므로 직접 비교
+      return (b.createdAt || '').localeCompare(a.createdAt || '');
+    });
+    
+    return {
+      props: {
+        initialRecipe: recipe,
+        initialComments: sortedComments,
+        locale: locale || 'ko',
+        ...(await serverSideTranslations(locale || 'ko', ['common'])),
+      },
+    };
+  } catch (error) {
+    console.error('Error in getServerSideProps:', error);
+    return {
+      props: {
+        initialRecipe: null,
+        initialComments: [],
+        locale: locale || 'ko',
+        ...(await serverSideTranslations(locale || 'ko', ['common'])),
+      },
+    };
+  }
+}

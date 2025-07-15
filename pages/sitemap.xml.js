@@ -1,4 +1,6 @@
 // pages/sitemap.xml.js
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase/config';
 
 export async function getServerSideProps({ res }) {
   const baseUrl = 'https://wackyfoki.com';
@@ -12,7 +14,14 @@ export async function getServerSideProps({ res }) {
     '/privacy',
   ];
 
-  const urls = staticPaths.map(path => {
+  // 레시피 페이지들 가져오기
+  const recipesSnapshot = await getDocs(collection(db, 'recipes'));
+  const recipePaths = recipesSnapshot.docs.map(doc => `/recipe/${doc.id}`);
+
+  // 정적 페이지와 레시피 페이지 합치기
+  const allPaths = [...staticPaths, ...recipePaths];
+
+  const urls = allPaths.map(path => {
     const links = locales.map(locale => {
       const localePath = locale === 'ko' ? path : `/${locale}${path}`;
       return `<xhtml:link rel="alternate" hreflang="${locale}" href="${baseUrl}${localePath}" />`;
