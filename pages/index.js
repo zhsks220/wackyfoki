@@ -135,7 +135,7 @@ export default function HomePage({ initialRecipes = [], error = null }) {
 
   // 클라이언트에서 초기 레시피 로드 (SSR 실패 시 또는 데이터가 없을 때만)
   useEffect(() => { 
-    if (initialRecipes.length === 0 || ssrError) {
+    if (initialRecipes.length === 0 || error) {
       fetchRecipes(true);
     }
   }, []);
@@ -402,8 +402,10 @@ export default function HomePage({ initialRecipes = [], error = null }) {
   );
 }
 
-/* ----------------------- i18n SSR with Safe Firebase ------------------------------ */
+/* ----------------------- i18n SSR with Client SDK ------------------------------ */
 export async function getServerSideProps({ locale }) {
+  console.log('[SSR] Starting getServerSideProps for index page');
+  
   try {
     // 환경변수 체크
     const requiredEnvVars = [
@@ -417,7 +419,7 @@ export async function getServerSideProps({ locale }) {
 
     const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
     if (missingVars.length > 0) {
-      console.warn('Missing Firebase environment variables:', missingVars);
+      console.warn('[SSR] Missing Firebase environment variables:', missingVars);
       // 환경변수가 없어도 페이지는 로드되도록 함
       return {
         props: {
@@ -428,129 +430,76 @@ export async function getServerSideProps({ locale }) {
       };
     }
 
-    // Firebase Admin SDK를 사용하여 서버에서 데이터 가져오기
+    // Firebase 클라이언트 SDK를 사용하여 서버에서 데이터 가져오기
     let initialRecipes = [];
     
     try {
-      // Firebase Admin SDK 동적 import (서버 사이드에서만)
-      const { getFirestore } = await import('firebase-admin/firestore');
-      const { initializeApp, cert, getApps } = await import('firebase-admin/app');
+      console.log('[SSR] Using Firebase Client SDK for data fetching');
       
-      // 이미 초기화되었는지 확인
-      if (getApps().length === 0) {
-        // 서비스 계정 키가 있는 경우 사용, 없으면 기본 초기화
-        if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-          const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-          initializeApp({
-            credential: cert(serviceAccount)
-          });
-        } else {
-          // 기본 초기화 (Vercel 등의 환경에서는 자동으로 인증됨)
-          initializeApp();
-        }
-      }
-
-      const adminDb = getFirestore();
+      // 클라이언트 SDK import
+      const { db } = require('../firebase/config');
+      const { collection, getDocs, query, orderBy, limit, doc, getDoc } = require('firebase/firestore');
       
       // 최신 레시피 5개 가져오기
-      const recipesSnapshot = await adminDb
-        .collection('recipes')
-        .orderBy('createdAt', 'desc')
-        .limit(5)
-        .get();
-
-      // 데이터 직렬화 및 사용자 정보 병합
+      const q = query(
+        collection(db, 'recipes'),
+        orderBy('createdAt', 'desc'),
+        limit(5)
+      );
+      
+      console.log('[SSR] Fetching recipes from Firestore...');
+      const snapshot = await getDocs(q);
+      const recipes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      console.log(`[SSR] Fetched ${recipes.length} recipes`);
+      
+      // 사용자 정보 병합
       initialRecipes = await Promise.all(
-        recipesSnapshot.docs.map(async (doc) => {
-          const data = doc.data();
-          let authorData = {
-            authorName: data.authorName || 'Anonymous',
-            authorImage: data.authorImage || ''
+        recipes.map(async (recipe) => {
+          // 기본값 설정
+          const baseRecipe = {
+            ...recipe,
+            createdAt: recipe.createdAt?.toDate?.() ? recipe.createdAt.toDate().toISOString() : null,
+            updatedAt: recipe.updatedAt?.toDate?.() ? recipe.updatedAt.toDate().toISOString() : null,
+            likedBy: Array.isArray(recipe.likedBy) ? recipe.likedBy : [],
+            likes: typeof recipe.likes === 'number' ? recipe.likes : 0,
+            authorName: recipe.authorName || 'Anonymous',
+            authorImage: recipe.authorImage || ''
           };
-
-          // 사용자 정보 가져오기 시도
-          if (data.uid) {
+          
+          // 사용자 정보가 있으면 가져오기
+          if (recipe.uid) {
             try {
-              const userDoc = await adminDb.collection('users').doc(data.uid).get();
-              if (userDoc.exists) {
-                const userData = userDoc.data();
-                authorData = {
-                  authorName: userData.displayName || authorData.authorName,
-                  authorImage: userData.profileImage || authorData.authorImage
+              console.log(`[SSR] Fetching user info for uid: ${recipe.uid}`);
+              const userSnap = await getDoc(doc(db, 'users', recipe.uid));
+              if (userSnap.exists()) {
+                const userData = userSnap.data();
+                return {
+                  ...baseRecipe,
+                  authorName: userData.displayName || baseRecipe.authorName,
+                  authorImage: userData.profileImage || baseRecipe.authorImage
                 };
               }
             } catch (userError) {
-              console.warn('Failed to fetch user data:', userError);
+              console.warn(`[SSR] Failed to fetch user data for uid ${recipe.uid}:`, userError.message);
             }
           }
-
-          return {
-            id: doc.id,
-            ...data,
-            ...authorData,
-            // 타임스탬프 직렬화
-            createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : null,
-            updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : null,
-            // Firestore 특수 객체 제거
-            likedBy: Array.isArray(data.likedBy) ? data.likedBy : [],
-            likes: typeof data.likes === 'number' ? data.likes : 0
-          };
+          
+          return baseRecipe;
         })
       );
+      
+      console.log('[SSR] Successfully processed all recipes with user data');
     } catch (firebaseError) {
-      console.error('Firebase Admin SDK error:', firebaseError);
-      // Firebase Admin SDK 사용 불가 시 클라이언트 SDK로 폴백
-      try {
-        const { db } = require('../firebase/config');
-        const { collection, getDocs, query, orderBy, limit, doc, getDoc } = require('firebase/firestore');
-        
-        const q = query(
-          collection(db, 'recipes'),
-          orderBy('createdAt', 'desc'),
-          limit(5)
-        );
-        
-        const snapshot = await getDocs(q);
-        const recipes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        
-        // 사용자 정보 병합
-        initialRecipes = await Promise.all(
-          recipes.map(async (recipe) => {
-            if (!recipe.uid) return {
-              ...recipe,
-              createdAt: recipe.createdAt?.toDate?.() ? recipe.createdAt.toDate().toISOString() : null,
-              updatedAt: recipe.updatedAt?.toDate?.() ? recipe.updatedAt.toDate().toISOString() : null,
-              likedBy: recipe.likedBy || [],
-              likes: recipe.likes || 0
-            };
-            
-            try {
-              const userSnap = await getDoc(doc(db, 'users', recipe.uid));
-              const userData = userSnap.exists() ? userSnap.data() : {};
-              return {
-                ...recipe,
-                authorName: userData.displayName || recipe.authorName || 'Anonymous',
-                authorImage: userData.profileImage || recipe.authorImage || '',
-                createdAt: recipe.createdAt?.toDate?.() ? recipe.createdAt.toDate().toISOString() : null,
-                updatedAt: recipe.updatedAt?.toDate?.() ? recipe.updatedAt.toDate().toISOString() : null,
-                likedBy: recipe.likedBy || [],
-                likes: recipe.likes || 0
-              };
-            } catch {
-              return {
-                ...recipe,
-                createdAt: recipe.createdAt?.toDate?.() ? recipe.createdAt.toDate().toISOString() : null,
-                updatedAt: recipe.updatedAt?.toDate?.() ? recipe.updatedAt.toDate().toISOString() : null,
-                likedBy: recipe.likedBy || [],
-                likes: recipe.likes || 0
-              };
-            }
-          })
-        );
-      } catch (clientError) {
-        console.error('Firebase client SDK error:', clientError);
-        // 모든 Firebase 연결 실패 시에도 페이지는 로드
-      }
+      console.error('[SSR] Firebase Client SDK error:', firebaseError.message);
+      console.error('[SSR] Error details:', firebaseError);
+      // Firebase 연결 실패 시에도 페이지는 로드
+      return {
+        props: {
+          ...(await serverSideTranslations(locale, ['common'])),
+          initialRecipes: [],
+          error: `Firebase error: ${firebaseError.message}`
+        },
+      };
     }
 
     return {
@@ -561,13 +510,14 @@ export async function getServerSideProps({ locale }) {
       },
     };
   } catch (error) {
-    console.error('getServerSideProps error:', error);
+    console.error('[SSR] Unexpected error in getServerSideProps:', error.message);
+    console.error('[SSR] Error stack:', error.stack);
     // 최상위 에러 발생 시에도 페이지 로드 보장
     return {
       props: {
         ...(await serverSideTranslations(locale, ['common'])),
         initialRecipes: [],
-        error: error.message || 'Unknown error occurred'
+        error: `Server error: ${error.message}`
       },
     };
   }
