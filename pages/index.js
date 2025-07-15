@@ -1,6 +1,4 @@
 // pages/index.js
-'use client';
-
 import Head from 'next/head';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import {
@@ -28,7 +26,7 @@ import { useCategory } from '@/contexts/CategoryContext';
 /* ============================================================== */
 /* 메인 페이지                                                     */
 /* ============================================================== */
-export default function HomePage() {
+export default function HomePage({ initialRecipes = [], initialHasMore = true }) {
   const { t } = useTranslation('common');
   const { keyword, searchCategory } = useSearch();
   const { category }               = useCategory();
@@ -36,16 +34,16 @@ export default function HomePage() {
   const router                     = useRouter();
 
   /* ---------------------------- state --------------------------- */
-  const [recipes,       setRecipes]       = useState([]);
+  const [recipes,       setRecipes]       = useState(initialRecipes);
   const [topComments,   setTopComments]   = useState({});
   const [commentCounts, setCommentCounts] = useState({});
   const [drawerRecipeId, setDrawerRecipeId] = useState(null);
   const [modalOpen,       setModalOpen]     = useState(false);
   const [dropdownOpenId,  setDropdownOpenId] = useState(null);
 
-  const [lastVisible,   setLastVisible]   = useState(null);
+  const [lastRecipeId,  setLastRecipeId]  = useState(initialRecipes.length > 0 ? initialRecipes[initialRecipes.length - 1].id : null);
   const [loadingMore,   setLoadingMore]   = useState(false);
-  const [hasMore,       setHasMore]       = useState(true);
+  const [hasMore,       setHasMore]       = useState(initialHasMore);
   const observer = useRef(null);
 
   const PAGE_SIZE = 5;
@@ -77,41 +75,76 @@ export default function HomePage() {
   const fetchRecipes = async (initial = false) => {
     if (!initial && !hasMore) return;
 
-    const q = query(
-      collection(db, 'recipes'),
-      orderBy('createdAt', 'desc'),
-      ...(initial
-        ? [limit(PAGE_SIZE)]
-        : [startAfter(lastVisible), limit(PAGE_SIZE)])
-    );
+    try {
+      let q;
+      if (initial) {
+        q = query(
+          collection(db, 'recipes'),
+          orderBy('createdAt', 'desc'),
+          limit(PAGE_SIZE)
+        );
+      } else if (lastRecipeId) {
+        // 마지막 레시피 문서를 가져와서 startAfter에 사용
+        const lastDoc = await getDoc(doc(db, 'recipes', lastRecipeId));
+        if (!lastDoc.exists()) return;
+        
+        q = query(
+          collection(db, 'recipes'),
+          orderBy('createdAt', 'desc'),
+          startAfter(lastDoc),
+          limit(PAGE_SIZE)
+        );
+      } else {
+        return;
+      }
 
-    const snap = await getDocs(q);
-    const base = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const snap = await getDocs(q);
+      const base = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    const merged = await Promise.all(base.map(async (r) => {
-      if (!r.uid) return r;
-      try {
-        const uSnap = await getDoc(doc(db, 'users', r.uid));
-        const uData = uSnap.exists() ? uSnap.data() : {};
-        return {
-          ...r,
-          authorName:  uData.displayName  || r.authorName  || t('anonymous'),
-          authorImage: uData.profileImage || r.authorImage || '',
-        };
-      } catch { return r; }
-    }));
+      const merged = await Promise.all(base.map(async (r) => {
+        if (!r.uid) return r;
+        try {
+          const uSnap = await getDoc(doc(db, 'users', r.uid));
+          const uData = uSnap.exists() ? uSnap.data() : {};
+          return {
+            ...r,
+            authorName:  uData.displayName  || r.authorName  || t('anonymous'),
+            authorImage: uData.profileImage || r.authorImage || '',
+            // 타임스탬프 직렬화
+            createdAt: r.createdAt?.toDate?.() ? r.createdAt.toDate().toISOString() : r.createdAt,
+            updatedAt: r.updatedAt?.toDate?.() ? r.updatedAt.toDate().toISOString() : r.updatedAt,
+          };
+        } catch { return r; }
+      }));
 
-    setRecipes(prev => initial ? merged : [...prev, ...merged]);
+      setRecipes(prev => initial ? merged : [...prev, ...merged]);
 
-    if (snap.empty || snap.docs.length < PAGE_SIZE) {
-      setHasMore(false);
-    } else {
-      setLastVisible(snap.docs[snap.docs.length - 1]);
+      if (snap.empty || snap.docs.length < PAGE_SIZE) {
+        setHasMore(false);
+      } else {
+        // 마지막 레시피의 ID 저장
+        setLastRecipeId(snap.docs[snap.docs.length - 1].id);
+      }
+    } catch (error) {
+      console.error('Error fetching recipes:', error);
     }
   };
 
-  useEffect(() => { fetchRecipes(true); }, []);
-  useEffect(() => { recipes.forEach(r => fetchTopComment(r.id)); }, [recipes]);
+  // SSR로 초기 데이터를 받아왔으므로, 클라이언트에서 첫 로드 생략
+  // 초기 레시피의 댓글 정보만 가져오기
+  useEffect(() => { 
+    if (initialRecipes.length > 0) {
+      initialRecipes.forEach(r => fetchTopComment(r.id));
+    }
+  }, []);
+  
+  // 새로운 레시피가 추가될 때만 댓글 정보 가져오기
+  useEffect(() => { 
+    if (recipes.length > initialRecipes.length) {
+      const newRecipes = recipes.slice(initialRecipes.length);
+      newRecipes.forEach(r => fetchTopComment(r.id));
+    }
+  }, [recipes.length]);
 
   /* -------------------- 무한 스크롤 옵저버 ----------------------- */
   const lastRecipeRef = useCallback(node => {
@@ -119,14 +152,14 @@ export default function HomePage() {
     if (observer.current) observer.current.disconnect();
 
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && lastVisible) {
+      if (entries[0].isIntersecting && lastRecipeId) {
         setLoadingMore(true);
         fetchRecipes(false).finally(() => setLoadingMore(false));
       }
     });
 
     if (node) observer.current.observe(node);
-  }, [lastVisible, loadingMore, hasMore]);
+  }, [lastRecipeId, loadingMore, hasMore]);
 
   /* ---------------------------- 삭제 ---------------------------- */
   const handleDeleteRecipe = async (id) => {
@@ -358,11 +391,66 @@ export default function HomePage() {
   );
 }
 
-/* ----------------------- i18n SSG ------------------------------ */
-export async function getStaticProps({ locale }) {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale, ['common'])),
-    },
-  };
+/* ----------------------- i18n SSR ------------------------------ */
+export async function getServerSideProps({ locale }) {
+  try {
+    // 초기 레시피 5개 가져오기
+    const q = query(
+      collection(db, 'recipes'),
+      orderBy('createdAt', 'desc'),
+      limit(5)
+    );
+    
+    const snap = await getDocs(q);
+    const base = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    // Firebase 타임스탬프 직렬화
+    const serializedRecipes = await Promise.all(base.map(async (r) => {
+      // 사용자 정보 병합
+      let authorName = r.authorName || 'Anonymous';
+      let authorImage = r.authorImage || '';
+      
+      if (r.uid) {
+        try {
+          const uSnap = await getDoc(doc(db, 'users', r.uid));
+          if (uSnap.exists()) {
+            const uData = uSnap.data();
+            authorName = uData.displayName || authorName;
+            authorImage = uData.profileImage || authorImage;
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      }
+      
+      return {
+        ...r,
+        authorName,
+        authorImage,
+        // Firebase 타임스탬프 직렬화
+        createdAt: r.createdAt?.toDate?.() ? r.createdAt.toDate().toISOString() : null,
+        updatedAt: r.updatedAt?.toDate?.() ? r.updatedAt.toDate().toISOString() : null,
+        // likedBy 배열 확인 및 직렬화
+        likedBy: Array.isArray(r.likedBy) ? r.likedBy : [],
+        likes: r.likes || 0,
+      };
+    }));
+    
+    return {
+      props: {
+        ...(await serverSideTranslations(locale, ['common'])),
+        initialRecipes: serializedRecipes,
+        initialHasMore: snap.docs.length === 5,
+      },
+    };
+  } catch (error) {
+    console.error('Error in getServerSideProps:', error);
+    return {
+      props: {
+        ...(await serverSideTranslations(locale, ['common'])),
+        initialRecipes: [],
+        initialHasMore: true,
+      },
+    };
+  }
 }
