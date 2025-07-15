@@ -9,6 +9,8 @@ import StarRating from '@/components/StarRating';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useTranslation } from 'next-i18next';
 
+const CATEGORY_KEYS = ['meal', 'snack', 'dessert', 'drink', 'experimental'];
+
 export default function EditRecipePage() {
   const { t } = useTranslation('common');
   const router = useRouter();
@@ -23,6 +25,7 @@ export default function EditRecipePage() {
   const [taste, setTaste] = useState(0);
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [imageItems, setImageItems] = useState([]);
+  const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,6 +49,7 @@ export default function EditRecipePage() {
       setDifficulty(data.difficulty || 0);
       setTaste(data.taste || 0);
       setYoutubeUrl(data.youtubeUrl || '');
+      setCategory(data.category || '');
 
       const urls = data.imageUrls || [];
       const descs = data.descriptions || [];
@@ -101,6 +105,7 @@ export default function EditRecipePage() {
       youtubeUrl: youtubeUrl.trim(),
       imageUrls: uploadedUrls,
       descriptions,
+      category,
       updatedAt: new Date(),
     });
 
@@ -128,6 +133,20 @@ export default function EditRecipePage() {
 
       <label>{t('label_youtube')}</label>
       <input style={inputStyle} value={youtubeUrl} onChange={e => setYoutubeUrl(e.target.value)} />
+
+      <label>{t('select_category')}</label>
+      <select
+        style={inputStyle}
+        value={category}
+        onChange={e => setCategory(e.target.value)}
+      >
+        <option value="">{t('select_category')}</option>
+        {CATEGORY_KEYS.map((key) => (
+          <option key={key} value={key}>
+            {t(`category_${key}`)}
+          </option>
+        ))}
+      </select>
 
       <label>{t('label_images')}</label>
       {imageItems.map((item, i) => (
