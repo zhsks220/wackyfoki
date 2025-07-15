@@ -204,6 +204,35 @@ export default function HomePage({ initialRecipes = [], error = null }) {
         <meta name="twitter:title"       content={t('meta_title')} />
         <meta name="twitter:description" content={t('meta_description')} />
         <meta name="twitter:image"       content="https://wackyfoki.com/og-image.png" />
+        
+        {/* 구조화된 데이터로 레시피 목록 제공 (SEO/AI 인식용) */}
+        {recipes.length > 0 && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "ItemList",
+                "name": "WackyFoki Recipes",
+                "description": "Latest bizarre recipes from WackyFoki",
+                "numberOfItems": recipes.length,
+                "itemListElement": recipes.map((recipe, index) => ({
+                  "@type": "Recipe",
+                  "position": index + 1,
+                  "name": recipe.title,
+                  "description": recipe.description,
+                  "image": recipe.imageUrls?.[0] || null,
+                  "author": {
+                    "@type": "Person",
+                    "name": recipe.authorName || "Anonymous"
+                  },
+                  "datePublished": recipe.createdAt,
+                  "url": `https://wackyfoki.com/recipe/${recipe.id}`
+                }))
+              })
+            }}
+          />
+        )}
       </Head>
 
       <div className="p-8 max-w-3xl mx-auto bg-[var(--background)] text-[var(--foreground)]">
@@ -256,6 +285,13 @@ export default function HomePage({ initialRecipes = [], error = null }) {
           </div>
         )}
 
+        {/* 디버깅 정보 - 프로덕션에서는 제거 필요 */}
+        {process.env.NODE_ENV === 'development' && (
+          <div style={{ background: '#f0f0f0', padding: '10px', marginBottom: '10px' }}>
+            <p>Debug: initialRecipes={initialRecipes.length}, recipes={recipes.length}, filtered={filteredRecipes.length}</p>
+          </div>
+        )}
+        
         {filteredRecipes.length === 0 && recipes.length === 0 && <p>{t('no_recipe')}</p>}
         {filteredRecipes.length === 0 && recipes.length > 0 && <p>{t('no_filtered_results')}</p>}
 
@@ -405,6 +441,8 @@ export default function HomePage({ initialRecipes = [], error = null }) {
 /* ----------------------- i18n ISR with Client SDK ------------------------------ */
 export async function getStaticProps({ locale }) {
   console.log('[ISR] Starting getStaticProps for index page');
+  console.log('[ISR] Build time:', new Date().toISOString());
+  console.log('[ISR] Locale:', locale);
   
   try {
     // 환경변수 체크
@@ -506,6 +544,9 @@ export async function getStaticProps({ locale }) {
       };
     }
 
+    console.log(`[ISR] Returning ${initialRecipes.length} recipes to the page`);
+    console.log('[ISR] First recipe title:', initialRecipes[0]?.title || 'No recipes');
+    
     return {
       props: {
         ...(await serverSideTranslations(locale, ['common'])),
