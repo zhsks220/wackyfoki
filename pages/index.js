@@ -439,10 +439,11 @@ export default function HomePage({ initialRecipes = [], error = null }) {
 }
 
 /* ----------------------- i18n ISR with Client SDK ------------------------------ */
-export async function getStaticProps({ locale }) {
+export async function getStaticProps({ locale = 'ko' }) {
   console.log('[ISR] Starting getStaticProps for index page');
   console.log('[ISR] Build time:', new Date().toISOString());
   console.log('[ISR] Locale:', locale);
+  console.log('[ISR] Building static page for locale:', locale);
   
   try {
     // 환경변수 체크
@@ -488,9 +489,15 @@ export async function getStaticProps({ locale }) {
       );
       
       console.log('[ISR] Fetching recipes from Firestore...');
+      console.log('[ISR] Query details:', { collection: 'recipes', orderBy: 'createdAt', limit: 5 });
+      
       const snapshot = await getDocs(q);
       const recipes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      console.log(`[ISR] Fetched ${recipes.length} recipes`);
+      
+      console.log(`[ISR] Fetched ${recipes.length} recipes for locale: ${locale}`);
+      if (recipes.length === 0) {
+        console.warn('[ISR] WARNING: No recipes found in Firestore!');
+      }
       
       // 사용자 정보 병합
       initialRecipes = await Promise.all(
@@ -544,8 +551,9 @@ export async function getStaticProps({ locale }) {
       };
     }
 
-    console.log(`[ISR] Returning ${initialRecipes.length} recipes to the page`);
+    console.log(`[ISR] Returning ${initialRecipes.length} recipes to the page for locale: ${locale}`);
     console.log('[ISR] First recipe title:', initialRecipes[0]?.title || 'No recipes');
+    console.log('[ISR] All recipe titles:', initialRecipes.map(r => r.title).join(', '));
     
     return {
       props: {
