@@ -26,7 +26,7 @@ import { useCategory } from '@/contexts/CategoryContext';
 /* ============================================================== */
 /* 메인 페이지                                                     */
 /* ============================================================== */
-export default function HomePage({ initialRecipes = [], initialHasMore = true }) {
+export default function HomePage({ initialRecipes = [], initialHasMore = true, error, debug }) {
   const { t } = useTranslation('common');
   const { keyword, searchCategory } = useSearch();
   const { category }               = useCategory();
@@ -133,8 +133,15 @@ export default function HomePage({ initialRecipes = [], initialHasMore = true })
   // SSR로 초기 데이터를 받아왔으므로, 클라이언트에서 첫 로드 생략
   // 초기 레시피의 댓글 정보만 가져오기
   useEffect(() => { 
-    if (initialRecipes.length > 0) {
+    // 에러나 샘플 데이터가 아닌 경우에만 댓글 정보 가져오기
+    if (initialRecipes.length > 0 && !error && !initialRecipes[0]?.id?.startsWith('sample-')) {
       initialRecipes.forEach(r => fetchTopComment(r.id));
+    }
+    
+    // 에러가 발생했거나 초기 데이터가 없는 경우 클라이언트에서 다시 시도
+    if ((error || initialRecipes.length === 0) && !initialRecipes[0]?.id?.startsWith('sample-')) {
+      console.log('[Client] Retrying to fetch recipes due to SSR error');
+      fetchRecipes(true);
     }
   }, []);
   
@@ -244,6 +251,19 @@ export default function HomePage({ initialRecipes = [], initialHasMore = true })
           </p>
         ) : (
           <p className="text-gray-500 mb-6">{t('not_logged_in')}</p>
+        )}
+        
+        {/* 디버그 정보 표시 (개발 환경에서만) */}
+        {(error || debug) && process.env.NODE_ENV === 'development' && (
+          <div className="bg-yellow-100 border border-yellow-400 rounded p-4 mb-6">
+            <h3 className="font-bold text-yellow-800 mb-2">Debug Info:</h3>
+            {error && <p className="text-red-600">Error: {error}</p>}
+            {debug && (
+              <pre className="text-xs text-gray-700">
+                {JSON.stringify(debug, null, 2)}
+              </pre>
+            )}
+          </div>
         )}
 
         {filteredRecipes.length === 0 && recipes.length === 0 && <p>{t('no_recipe')}</p>}
@@ -394,48 +414,156 @@ export default function HomePage({ initialRecipes = [], initialHasMore = true })
 
 /* ----------------------- i18n SSR ------------------------------ */
 export async function getServerSideProps({ locale }) {
+  console.log('[SSR] Starting getServerSideProps...');
+  
   try {
+    // Firebase 초기화 상태 확인
+    console.log('[SSR] Checking Firebase config...');
+    console.log('[SSR] Firebase project ID:', process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
+    
+    // Firestore 연결 테스트
+    console.log('[SSR] Testing Firestore connection...');
+    
     // 초기 레시피 5개 가져오기
+    const recipesRef = collection(db, 'recipes');
+    console.log('[SSR] Created recipes collection reference');
+    
     const q = query(
-      collection(db, 'recipes'),
+      recipesRef,
       orderBy('createdAt', 'desc'),
       limit(5)
     );
+    console.log('[SSR] Created query for recipes');
     
     const snap = await getDocs(q);
+    console.log('[SSR] Fetched recipes:', {
+      empty: snap.empty,
+      size: snap.size,
+      docs: snap.docs.length
+    });
+    
+    // 레시피가 없는 경우에도 유효한 응답 반환
+    if (snap.empty) {
+      console.log('[SSR] No recipes found in database');
+      return {
+        props: {
+          ...(await serverSideTranslations(locale, ['common'])),
+          initialRecipes: [],
+          initialHasMore: false,
+          // 디버깅용 정보 추가
+          debug: {
+            message: 'No recipes in database',
+            timestamp: new Date().toISOString(),
+            projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+          }
+        },
+      };
+    }
+    
     const base = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    console.log('[SSR] Mapped base recipes:', base.length);
     
     // Firebase 타임스탬프 직렬화
-    const serializedRecipes = await Promise.all(base.map(async (r) => {
-      // 사용자 정보 병합
-      let authorName = r.authorName || 'Anonymous';
-      let authorImage = r.authorImage || '';
-      
-      if (r.uid) {
-        try {
-          const uSnap = await getDoc(doc(db, 'users', r.uid));
-          if (uSnap.exists()) {
-            const uData = uSnap.data();
-            authorName = uData.displayName || authorName;
-            authorImage = uData.profileImage || authorImage;
+    const serializedRecipes = await Promise.all(base.map(async (r, index) => {
+      try {
+        console.log(`[SSR] Processing recipe ${index + 1}/${base.length}: ${r.id}`);
+        
+        // 사용자 정보 병합
+        let authorName = r.authorName || 'Anonymous';
+        let authorImage = r.authorImage || '';
+        
+        if (r.uid) {
+          try {
+            const userRef = doc(db, 'users', r.uid);
+            const uSnap = await getDoc(userRef);
+            if (uSnap.exists()) {
+              const uData = uSnap.data();
+              authorName = uData.displayName || authorName;
+              authorImage = uData.profileImage || authorImage;
+              console.log(`[SSR] Found user data for ${r.uid}`);
+            } else {
+              console.log(`[SSR] No user data found for ${r.uid}`);
+            }
+          } catch (userError) {
+            console.error(`[SSR] Error fetching user ${r.uid}:`, userError.message);
           }
-        } catch (error) {
-          console.error('Error fetching user data:', error);
         }
+        
+        // 안전한 타임스탬프 직렬화
+        let createdAt = null;
+        let updatedAt = null;
+        
+        try {
+          if (r.createdAt) {
+            if (typeof r.createdAt.toDate === 'function') {
+              createdAt = r.createdAt.toDate().toISOString();
+            } else if (r.createdAt instanceof Date) {
+              createdAt = r.createdAt.toISOString();
+            } else if (typeof r.createdAt === 'string') {
+              createdAt = r.createdAt;
+            }
+          }
+          
+          if (r.updatedAt) {
+            if (typeof r.updatedAt.toDate === 'function') {
+              updatedAt = r.updatedAt.toDate().toISOString();
+            } else if (r.updatedAt instanceof Date) {
+              updatedAt = r.updatedAt.toISOString();
+            } else if (typeof r.updatedAt === 'string') {
+              updatedAt = r.updatedAt;
+            }
+          }
+        } catch (dateError) {
+          console.error(`[SSR] Error processing timestamps for recipe ${r.id}:`, dateError);
+        }
+        
+        const serialized = {
+          ...r,
+          authorName,
+          authorImage,
+          createdAt,
+          updatedAt,
+          // 안전한 배열 및 숫자 처리
+          likedBy: Array.isArray(r.likedBy) ? r.likedBy : [],
+          likes: typeof r.likes === 'number' ? r.likes : 0,
+          // 필수 필드 검증
+          title: r.title || 'Untitled Recipe',
+          description: r.description || '',
+          category: r.category || 'uncategorized',
+          ingredients: Array.isArray(r.ingredients) ? r.ingredients : [],
+          steps: Array.isArray(r.steps) ? r.steps : [],
+          images: Array.isArray(r.images) ? r.images : [],
+          videoUrl: r.videoUrl || '',
+        };
+        
+        console.log(`[SSR] Serialized recipe ${r.id} successfully`);
+        return serialized;
+        
+      } catch (recipeError) {
+        console.error(`[SSR] Error processing recipe ${r.id}:`, recipeError);
+        // 에러가 발생해도 기본 데이터 반환
+        return {
+          id: r.id,
+          title: r.title || 'Untitled Recipe',
+          description: r.description || '',
+          category: r.category || 'uncategorized',
+          authorName: 'Anonymous',
+          authorImage: '',
+          createdAt: null,
+          updatedAt: null,
+          likedBy: [],
+          likes: 0,
+          ingredients: [],
+          steps: [],
+          images: [],
+          videoUrl: '',
+          uid: r.uid || null,
+        };
       }
-      
-      return {
-        ...r,
-        authorName,
-        authorImage,
-        // Firebase 타임스탬프 직렬화
-        createdAt: r.createdAt?.toDate?.() ? r.createdAt.toDate().toISOString() : null,
-        updatedAt: r.updatedAt?.toDate?.() ? r.updatedAt.toDate().toISOString() : null,
-        // likedBy 배열 확인 및 직렬화
-        likedBy: Array.isArray(r.likedBy) ? r.likedBy : [],
-        likes: r.likes || 0,
-      };
     }));
+    
+    console.log('[SSR] All recipes serialized successfully');
+    console.log('[SSR] First recipe sample:', JSON.stringify(serializedRecipes[0], null, 2));
     
     return {
       props: {
@@ -445,12 +573,55 @@ export async function getServerSideProps({ locale }) {
       },
     };
   } catch (error) {
-    console.error('Error in getServerSideProps:', error);
+    console.error('[SSR] Critical error in getServerSideProps:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
+    
+    // 더 구체적인 에러 처리
+    if (error.code === 'unavailable') {
+      console.error('[SSR] Firestore is unavailable. Check network connection.');
+    } else if (error.code === 'permission-denied') {
+      console.error('[SSR] Firestore permission denied. Check security rules.');
+    } else if (error.code === 'not-found') {
+      console.error('[SSR] Firestore collection not found.');
+    }
+    
+    // 에러가 발생해도 기본 props 반환
+    // 에러 시 샘플 데이터 제공 (AI 도구가 레시피를 볼 수 있도록)
+    const sampleRecipes = [
+      {
+        id: 'sample-1',
+        title: 'Sample Recipe - Database Connection Error',
+        description: 'This is a sample recipe shown because of database connection issues.',
+        category: 'sample',
+        authorName: 'System',
+        authorImage: '/default-avatar.png',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        likedBy: [],
+        likes: 0,
+        ingredients: ['Sample ingredient 1', 'Sample ingredient 2'],
+        steps: ['This is a sample step.'],
+        images: [],
+        videoUrl: '',
+        uid: 'system',
+      }
+    ];
+    
     return {
       props: {
         ...(await serverSideTranslations(locale, ['common'])),
-        initialRecipes: [],
+        initialRecipes: process.env.NODE_ENV === 'development' ? sampleRecipes : [],
         initialHasMore: true,
+        error: error.message, // 디버깅용
+        debug: {
+          message: 'Error fetching recipes',
+          errorCode: error.code,
+          timestamp: new Date().toISOString(),
+          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        }
       },
     };
   }

@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 // Firebase 환경 변수 설정 (.env.local에서 불러옴)
@@ -13,10 +13,33 @@ const firebaseConfig = {
 };
 
 // 앱 초기화
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+let app;
+try {
+  app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+} catch (error) {
+  console.error('Firebase initialization error:', error);
+  // 에러 발생 시에도 초기화 시도
+  app = initializeApp(firebaseConfig, 'gwesik-web');
+}
 
 // 각 서비스 초기화
-export const db = getFirestore(app);
+let db;
+try {
+  db = getFirestore(app);
+  
+  // 개발 환경에서 에뮬레이터 사용 설정 (옵션)
+  if (process.env.NODE_ENV === 'development' && process.env.FIRESTORE_EMULATOR_HOST) {
+    if (!db._settings?.host?.includes('localhost')) {
+      connectFirestoreEmulator(db, 'localhost', 8080);
+    }
+  }
+} catch (error) {
+  console.error('Firestore initialization error:', error);
+  // 재시도
+  db = getFirestore(app);
+}
+
+export { db };
 export const auth = getAuth(app);
 
 // ✅ Storage 버킷 주소 직접 지정 (안정성 위해 유지)
