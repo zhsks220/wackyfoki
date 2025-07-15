@@ -24,6 +24,7 @@
   "photo_youtube": "写真＆YouTube",
   "welcome": "ようこそ、{{name}} さん！",
   "no_recipe": "まだレシピがアップロードされていません！",
+  "no_filtered_results": "検索条件に一致するレシピがありません。",
   "comment_placeholder": "コメントを書く",
   "submit": "送信",
   "edit": "編集",

@@ -24,6 +24,7 @@
   "photo_youtube": "Photos & YouTube",
   "welcome": "Welcome, {{name}}!",
   "no_recipe": "No recipes have been uploaded yet!",
+  "no_filtered_results": "No recipes found matching your search criteria.",
   "comment_placeholder": "Write a comment",
   "submit": "Submit",
   "edit": "Edit",

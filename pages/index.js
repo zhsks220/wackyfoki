@@ -246,7 +246,8 @@ export default function HomePage({ initialRecipes = [], initialHasMore = true })
           <p className="text-gray-500 mb-6">{t('not_logged_in')}</p>
         )}
 
-        {filteredRecipes.length === 0 && <p>{t('no_recipe')}</p>}
+        {filteredRecipes.length === 0 && recipes.length === 0 && <p>{t('no_recipe')}</p>}
+        {filteredRecipes.length === 0 && recipes.length > 0 && <p>{t('no_filtered_results')}</p>}
 
         {/* -------------------- 레시피 카드 리스트 ------------------- */}
         <div className="flex flex-col gap-6">

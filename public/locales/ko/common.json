@@ -24,6 +24,7 @@
   "photo_youtube": "사진 및 유튜브",
   "welcome": "{{name}}님, 환영합니다!",
   "no_recipe": "업로드된 레시피가 아직 없어요!",
+  "no_filtered_results": "검색 조건에 맞는 레시피가 없습니다.",
   "comment_placeholder": "댓글을 입력하세요",
   "submit": "등록",
   "edit": "수정",
