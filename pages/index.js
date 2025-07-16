@@ -48,8 +48,19 @@ export default function HomePage({ initialRecipes = [], error = null }) {
   const [hasMore,       setHasMore]       = useState(initialRecipes.length >= 5);
   const observer = useRef(null);
   const [ssrError, setSsrError] = useState(error);
+  const [isMobile, setIsMobile] = useState(false);
 
   const PAGE_SIZE = 5;
+
+  /* ------------------ 모바일 감지 -------------- */
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   /* ------------------ 댓글 Top + 개수 메타 가져오기 -------------- */
   const fetchTopComment = async (recipeId) => {
@@ -412,15 +423,19 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                         />
                       </div>
                       {/* 모바일용 광고 */}
-                      <div className="block md:hidden">
-                        <ins 
-                          className="kakao_ad_area" 
-                          style={{ display: "none" }}
-                          data-ad-unit="DAN-lTzzJjsrbDQ8kJwx"
-                          data-ad-width="320"
-                          data-ad-height="50"
-                        />
-                      </div>
+                      {isMobile && (
+                        <div className="w-full">
+                          <div style={{ minHeight: "50px", textAlign: "center" }}>
+                            <ins 
+                              className="kakao_ad_area" 
+                              style={{ display: "none" }}
+                              data-ad-unit="DAN-lTzzJjsrbDQ8kJwx"
+                              data-ad-width="320"
+                              data-ad-height="50"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
