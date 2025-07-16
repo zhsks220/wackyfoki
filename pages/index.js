@@ -397,12 +397,28 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                   )}
                 </div>
 
-                {/* 중간 광고 샘플 ---------------------------------- */}
+                {/* 카카오 애드핏 광고 (3번째 레시피 다음) */}
                 {idx === 2 && (
                   <div className="my-6 flex justify-center">
-                    <div className="w-full max-w-[728px] h-[90px] bg-gray-200
-                                    flex items-center justify-center rounded shadow">
-                      🔸 광고 자리 (중간)
+                    {/* PC용 광고 */}
+                    <div className="hidden md:block w-full max-w-[728px]">
+                      <ins 
+                        className="kakao_ad_area" 
+                        style={{ display: "none" }}
+                        data-ad-unit="DAN-s2B5ioxlTzXJhmyW"
+                        data-ad-width="728"
+                        data-ad-height="90"
+                      />
+                    </div>
+                    {/* 모바일용 광고 */}
+                    <div className="block md:hidden w-full max-w-[320px]">
+                      <ins 
+                        className="kakao_ad_area" 
+                        style={{ display: "none" }}
+                        data-ad-unit="DAN-R2SA9ceoZzgC2hh3"
+                        data-ad-width="320"
+                        data-ad-height="100"
+                      />
                     </div>
                   </div>
                 )}

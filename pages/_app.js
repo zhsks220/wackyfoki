@@ -53,6 +53,37 @@ function InnerLayout({ Component, pageProps }) {
     }
   }, [user, isLoading, router]);
 
+  // ✅ 쿠팡 파트너스 광고 로드
+  useEffect(() => {
+    // 스크립트 로드
+    const script1 = document.createElement('script');
+    script1.src = 'https://ads-partners.coupang.com/g.js';
+    script1.async = true;
+    document.body.appendChild(script1);
+
+    script1.onload = () => {
+      // 광고 초기화
+      if (window.PartnersCoupang) {
+        new window.PartnersCoupang({
+          id: 890449,
+          template: "carousel",
+          trackingCode: "AF6458698",
+          width: "160",
+          height: "600",
+          tsource: "",
+          container: document.getElementById('coupang-partners-ad')
+        });
+      }
+    };
+
+    return () => {
+      // 클린업
+      if (document.body.contains(script1)) {
+        document.body.removeChild(script1);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     const stored = localStorage.getItem('darkMode');
     const prefers = stored === null ? matchMedia('(prefers-color-scheme: dark)').matches : stored === 'true';
@@ -129,8 +160,20 @@ function InnerLayout({ Component, pageProps }) {
         />
       </Head>
 
-      <div className="hidden lg:block fixed left-0 top-44 z-40 w-[160px] h-[600px] bg-gray-100 border border-gray-300 rounded shadow-md flex items-center justify-center">
-        광고 자리
+      {/* 왼쪽 카카오 애드핏 광고 */}
+      <div className="hidden lg:block fixed left-0 top-44 z-40 w-[160px] h-[600px]">
+        <ins 
+          className="kakao_ad_area" 
+          style={{ display: "none" }}
+          data-ad-unit="DAN-jGv3PEktX9ANGtVL"
+          data-ad-width="160"
+          data-ad-height="600"
+        />
+      </div>
+
+      {/* 오른쪽 쿠팡 파트너스 광고 */}
+      <div className="hidden lg:block fixed right-0 top-44 z-40 w-[160px] h-[600px]">
+        <div id="coupang-partners-ad" />
       </div>
 
       <header className="w-full px-3 sm:px-6 py-3 flex flex-col gap-2 bg-[var(--background)] z-40 shadow-sm">
@@ -252,11 +295,12 @@ function InnerLayout({ Component, pageProps }) {
         <Component {...pageProps} />
       </main>
 
-      <div className="w-full flex justify-center py-8">
+      {/* 하단 광고 - 임시로 숨김 처리 */}
+      {/* <div className="w-full flex justify-center py-8">
         <div className="w-full max-w-[728px] h-[90px] bg-gray-200 rounded shadow-sm flex items-center justify-center">
           하단 광고 자리
         </div>
-      </div>
+      </div> */}
 
       <footer className="w-full py-4 px-3 sm:px-6 text-center text-xs sm:text-sm bg-[var(--footer-bg)]">
         © {new Date().getFullYear()} WackyFoki ·{' '}

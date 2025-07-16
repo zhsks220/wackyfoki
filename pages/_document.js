@@ -20,6 +20,13 @@ export default function Document() {
 
         {/* ✅ 기존 favicon 유지 */}
         <link rel="icon" href="/favicon.ico" />
+
+        {/* ✅ 카카오 애드핏 스크립트 */}
+        <script
+          type="text/javascript"
+          src="//t1.daumcdn.net/kas/static/ba.min.js"
+          async
+        ></script>
       </Head>
       <body className="antialiased">
         <Main />
