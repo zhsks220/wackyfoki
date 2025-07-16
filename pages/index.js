@@ -413,32 +413,17 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                   )}
                 </div>
 
-                {/* 카카오 애드핏 광고 (4개 이후 표시) */}
+                {/* 카카오 애드핏 광고 (4개 이후 표시 - PC만) */}
                 {idx === 3 && (
-                  <div className="w-full max-w-[680px] mx-auto my-6">
+                  <div className="hidden md:block w-full max-w-[680px] mx-auto my-6">
                     <div className="flex justify-center items-center">
-                      {/* PC용 광고 */}
-                      <div className="hidden md:block">
-                        <ins 
-                          className="kakao_ad_area" 
-                          style={{ display: "none" }}
-                          data-ad-unit="DAN-s2B5ioxlTzXJhmyW"
-                          data-ad-width="728"
-                          data-ad-height="90"
-                        />
-                      </div>
-                      {/* 모바일용 광고 */}
-                      <div className="block md:hidden w-full">
-                        <div style={{ minHeight: "50px", textAlign: "center" }}>
-                          <ins 
-                            className="kakao_ad_area" 
-                            style={{ display: "none" }}
-                            data-ad-unit="DAN-lTzzJjsrbDQ8kJwx"
-                            data-ad-width="320"
-                            data-ad-height="50"
-                          />
-                        </div>
-                      </div>
+                      <ins 
+                        className="kakao_ad_area" 
+                        style={{ display: "none" }}
+                        data-ad-unit="DAN-s2B5ioxlTzXJhmyW"
+                        data-ad-width="728"
+                        data-ad-height="90"
+                      />
                     </div>
                   </div>
                 )}
