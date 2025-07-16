@@ -294,22 +294,22 @@ function InnerLayout({ Component, pageProps }) {
         )}
       </header>
 
-      <main className="flex-1 px-3 sm:px-6">
+      <main className="flex-1 px-3 sm:px-6 pb-16 md:pb-0">
         <Component {...pageProps} />
       </main>
 
-      {/* 모바일 하단 고정 광고 - 나중에 별도 광고 ID로 교체 필요 */}
-      {/* <div className="block md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white">
-        <div className="flex justify-center">
+      {/* 모바일 하단 고정 광고 */}
+      <div className="block md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white shadow-lg">
+        <div className="flex justify-center py-1">
           <ins 
             className="kakao_ad_area" 
             style={{ display: "none" }}
-            data-ad-unit="DAN-모바일전용ID필요"
+            data-ad-unit="DAN-lTzzJjsrbDQ8kJwx"
             data-ad-width="320"
-            data-ad-height="100"
+            data-ad-height="50"
           />
         </div>
-      </div> */}
+      </div>
 
       <footer className="w-full py-4 px-3 sm:px-6 text-center text-xs sm:text-sm bg-[var(--footer-bg)]">
         © {new Date().getFullYear()} WackyFoki ·{' '}

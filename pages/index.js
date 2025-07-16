@@ -52,20 +52,6 @@ export default function HomePage({ initialRecipes = [], error = null }) {
 
   const PAGE_SIZE = 5;
 
-  /* ------------------ 광고 새로고침 -------------- */
-  useEffect(() => {
-    // 페이지 로드 후 광고 새로고침
-    const refreshAds = () => {
-      if (window.adfit) {
-        window.adfit.refresh();
-      }
-    };
-    
-    // 약간의 지연 후 실행
-    const timer = setTimeout(refreshAds, 1000);
-    
-    return () => clearTimeout(timer);
-  }, []);
 
   /* ------------------ 댓글 Top + 개수 메타 가져오기 -------------- */
   const fetchTopComment = async (recipeId) => {
