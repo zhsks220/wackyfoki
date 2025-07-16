@@ -15,6 +15,7 @@ import { CategoryProvider } from '@/contexts/CategoryContext';
 
 import StickySearchBar from '@/components/StickySearchBar';
 import CategoryButtons from '@/components/CategoryButtons';
+import ScrollToTop from '@/components/ScrollToTop';
 
 const LOCALES = [
   { code: 'ko', label: '한국어' },
@@ -70,8 +71,8 @@ function InnerLayout({ Component, pageProps }) {
       iframe.src = `https://ads-partners.coupang.com/widgets.html?id=890449&template=carousel&trackingCode=AF6458698&subId=&width=160&height=600`;
       iframe.width = "160";
       iframe.height = "600";
-      iframe.frameBorder = "0";
-      iframe.scrolling = "no";
+      iframe.style.border = "0";
+      iframe.setAttribute('scrolling', 'no');
       
       container.appendChild(iframe);
     };
@@ -315,6 +316,8 @@ function InnerLayout({ Component, pageProps }) {
         <Link href="/terms" className="underline ml-1">{t('terms')}</Link> ·{' '}
         <Link href="/privacy" className="underline ml-1">{t('privacy')}</Link>
       </footer>
+
+      <ScrollToTop />
     </div>
   );
 }

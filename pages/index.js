@@ -416,9 +416,9 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                         <ins 
                           className="kakao_ad_area" 
                           style={{ display: "none" }}
-                          data-ad-unit="DAN-R2SA9ceoZzgC2hh3"
+                          data-ad-unit="DAN-lTzzJjsrbDQ8kJwx"
                           data-ad-width="320"
-                          data-ad-height="100"
+                          data-ad-height="50"
                         />
                       </div>
                     </div>
