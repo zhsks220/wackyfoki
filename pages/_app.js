@@ -89,6 +89,7 @@ function InnerLayout({ Component, pageProps }) {
     };
   }, []);
 
+
   useEffect(() => {
     const stored = localStorage.getItem('darkMode');
     const prefers = stored === null ? matchMedia('(prefers-color-scheme: dark)').matches : stored === 'true';
@@ -299,8 +300,9 @@ function InnerLayout({ Component, pageProps }) {
       </main>
 
       {/* 모바일 하단 고정 광고 */}
-      <div className="block md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white shadow-lg">
-        <div className="flex justify-center py-1">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] shadow-lg bg-white dark:bg-gray-900" 
+           style={{ height: '60px' }}>
+        <div className="flex justify-center items-center h-full">
           <ins 
             className="kakao_ad_area" 
             style={{ display: "none" }}
