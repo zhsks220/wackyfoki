@@ -397,28 +397,30 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                   )}
                 </div>
 
-                {/* 카카오 애드핏 광고 (3개마다 표시) */}
-                {(idx + 1) % 3 === 0 && (
-                  <div className="my-6 flex justify-center">
-                    {/* PC용 광고 */}
-                    <div className="hidden md:block w-full max-w-[728px]">
-                      <ins 
-                        className="kakao_ad_area" 
-                        style={{ display: "none" }}
-                        data-ad-unit="DAN-s2B5ioxlTzXJhmyW"
-                        data-ad-width="728"
-                        data-ad-height="90"
-                      />
-                    </div>
-                    {/* 모바일용 광고 */}
-                    <div className="block md:hidden w-full max-w-[320px]">
-                      <ins 
-                        className="kakao_ad_area" 
-                        style={{ display: "none" }}
-                        data-ad-unit="DAN-R2SA9ceoZzgC2hh3"
-                        data-ad-width="320"
-                        data-ad-height="100"
-                      />
+                {/* 카카오 애드핏 광고 (4개 이후 표시) */}
+                {idx === 3 && (
+                  <div className="w-full max-w-[680px] mx-auto my-6">
+                    <div className="flex justify-center items-center">
+                      {/* PC용 광고 */}
+                      <div className="hidden md:block">
+                        <ins 
+                          className="kakao_ad_area" 
+                          style={{ display: "none" }}
+                          data-ad-unit="DAN-s2B5ioxlTzXJhmyW"
+                          data-ad-width="728"
+                          data-ad-height="90"
+                        />
+                      </div>
+                      {/* 모바일용 광고 */}
+                      <div className="block md:hidden">
+                        <ins 
+                          className="kakao_ad_area" 
+                          style={{ display: "none" }}
+                          data-ad-unit="DAN-R2SA9ceoZzgC2hh3"
+                          data-ad-width="320"
+                          data-ad-height="100"
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
