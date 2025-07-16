@@ -397,8 +397,8 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                   )}
                 </div>
 
-                {/* 카카오 애드핏 광고 (3번째 레시피 다음) */}
-                {idx === 2 && (
+                {/* 카카오 애드핏 광고 (3개마다 표시) */}
+                {(idx + 1) % 3 === 0 && (
                   <div className="my-6 flex justify-center">
                     {/* PC용 광고 */}
                     <div className="hidden md:block w-full max-w-[728px]">

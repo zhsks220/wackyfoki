@@ -55,31 +55,44 @@ function InnerLayout({ Component, pageProps }) {
 
   // ✅ 쿠팡 파트너스 광고 로드
   useEffect(() => {
-    // 스크립트 로드
-    const script1 = document.createElement('script');
-    script1.src = 'https://ads-partners.coupang.com/g.js';
-    script1.async = true;
-    document.body.appendChild(script1);
-
-    script1.onload = () => {
-      // 광고 초기화
-      if (window.PartnersCoupang) {
-        new window.PartnersCoupang({
-          id: 890449,
-          template: "carousel",
-          trackingCode: "AF6458698",
-          width: "160",
-          height: "600",
-          tsource: "",
-          container: document.getElementById('coupang-partners-ad')
-        });
-      }
+    // 스크립트를 직접 삽입
+    const script = document.createElement('script');
+    script.innerHTML = `
+      new PartnersCoupang.G({
+        id: 890449,
+        template: "carousel",
+        trackingCode: "AF6458698",
+        width: "160",
+        height: "600",
+        tsource: ""
+      });
+    `;
+    
+    // 먼저 g.js 로드
+    const gScript = document.createElement('script');
+    gScript.src = 'https://ads-partners.coupang.com/g.js';
+    gScript.async = true;
+    
+    gScript.onload = () => {
+      // g.js 로드 후 광고 스크립트 실행
+      setTimeout(() => {
+        try {
+          document.body.appendChild(script);
+        } catch (error) {
+          console.error('쿠팡 광고 로드 오류:', error);
+        }
+      }, 100);
     };
+    
+    document.body.appendChild(gScript);
 
     return () => {
       // 클린업
-      if (document.body.contains(script1)) {
-        document.body.removeChild(script1);
+      if (document.body.contains(gScript)) {
+        document.body.removeChild(gScript);
+      }
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
       }
     };
   }, []);
@@ -295,10 +308,16 @@ function InnerLayout({ Component, pageProps }) {
         <Component {...pageProps} />
       </main>
 
-      {/* 하단 광고 - 임시로 숨김 처리 */}
-      {/* <div className="w-full flex justify-center py-8">
-        <div className="w-full max-w-[728px] h-[90px] bg-gray-200 rounded shadow-sm flex items-center justify-center">
-          하단 광고 자리
+      {/* 모바일 하단 고정 광고 - 나중에 별도 광고 ID로 교체 필요 */}
+      {/* <div className="block md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white">
+        <div className="flex justify-center">
+          <ins 
+            className="kakao_ad_area" 
+            style={{ display: "none" }}
+            data-ad-unit="DAN-모바일전용ID필요"
+            data-ad-width="320"
+            data-ad-height="100"
+          />
         </div>
       </div> */}
 
