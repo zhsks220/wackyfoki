@@ -52,14 +52,19 @@ export default function HomePage({ initialRecipes = [], error = null }) {
 
   const PAGE_SIZE = 5;
 
-  /* ------------------ 모바일 감지 -------------- */
+  /* ------------------ 광고 새로고침 -------------- */
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+    // 페이지 로드 후 광고 새로고침
+    const refreshAds = () => {
+      if (window.adfit) {
+        window.adfit.refresh();
+      }
     };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    
+    // 약간의 지연 후 실행
+    const timer = setTimeout(refreshAds, 1000);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   /* ------------------ 댓글 Top + 개수 메타 가져오기 -------------- */
@@ -423,19 +428,17 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                         />
                       </div>
                       {/* 모바일용 광고 */}
-                      {isMobile && (
-                        <div className="w-full">
-                          <div style={{ minHeight: "50px", textAlign: "center" }}>
-                            <ins 
-                              className="kakao_ad_area" 
-                              style={{ display: "none" }}
-                              data-ad-unit="DAN-lTzzJjsrbDQ8kJwx"
-                              data-ad-width="320"
-                              data-ad-height="50"
-                            />
-                          </div>
+                      <div className="block md:hidden w-full">
+                        <div style={{ minHeight: "50px", textAlign: "center" }}>
+                          <ins 
+                            className="kakao_ad_area" 
+                            style={{ display: "none" }}
+                            data-ad-unit="DAN-lTzzJjsrbDQ8kJwx"
+                            data-ad-width="320"
+                            data-ad-height="50"
+                          />
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 )}
