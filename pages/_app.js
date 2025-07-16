@@ -55,45 +55,36 @@ function InnerLayout({ Component, pageProps }) {
 
   // ✅ 쿠팡 파트너스 광고 로드
   useEffect(() => {
-    // 스크립트를 직접 삽입
-    const script = document.createElement('script');
-    script.innerHTML = `
-      new PartnersCoupang.G({
-        id: 890449,
-        template: "carousel",
-        trackingCode: "AF6458698",
-        width: "160",
-        height: "600",
-        tsource: ""
-      });
-    `;
+    if (typeof window === 'undefined') return;
     
-    // 먼저 g.js 로드
-    const gScript = document.createElement('script');
-    gScript.src = 'https://ads-partners.coupang.com/g.js';
-    gScript.async = true;
-    
-    gScript.onload = () => {
-      // g.js 로드 후 광고 스크립트 실행
-      setTimeout(() => {
-        try {
-          document.body.appendChild(script);
-        } catch (error) {
-          console.error('쿠팡 광고 로드 오류:', error);
-        }
-      }, 100);
+    const loadCoupangAd = () => {
+      // 쿠팡 광고 컨테이너가 있는지 확인
+      const container = document.getElementById('coupang-partners-ad');
+      if (!container) return;
+      
+      // 기존 내용 초기화
+      container.innerHTML = '';
+      
+      // 쿠팡 광고 스크립트 직접 삽입
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://ads-partners.coupang.com/widgets.html?id=890449&template=carousel&trackingCode=AF6458698&subId=&width=160&height=600`;
+      iframe.width = "160";
+      iframe.height = "600";
+      iframe.frameBorder = "0";
+      iframe.scrolling = "no";
+      
+      container.appendChild(iframe);
     };
     
-    document.body.appendChild(gScript);
-
+    // 클라이언트 사이드에서만 실행
+    if (document.readyState === 'complete') {
+      loadCoupangAd();
+    } else {
+      window.addEventListener('load', loadCoupangAd);
+    }
+    
     return () => {
-      // 클린업
-      if (document.body.contains(gScript)) {
-        document.body.removeChild(gScript);
-      }
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
+      window.removeEventListener('load', loadCoupangAd);
     };
   }, []);
 
@@ -185,9 +176,7 @@ function InnerLayout({ Component, pageProps }) {
       </div>
 
       {/* 오른쪽 쿠팡 파트너스 광고 */}
-      <div className="hidden lg:block fixed right-0 top-44 z-40 w-[160px] h-[600px]">
-        <div id="coupang-partners-ad" />
-      </div>
+      <div id="coupang-partners-ad" className="hidden lg:block fixed right-0 top-44 z-40 w-[160px] h-[600px]" />
 
       <header className="w-full px-3 sm:px-6 py-3 flex flex-col gap-2 bg-[var(--background)] z-40 shadow-sm">
         <div className="flex items-center justify-between gap-3 relative">
