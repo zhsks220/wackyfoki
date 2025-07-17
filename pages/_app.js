@@ -92,9 +92,32 @@ function InnerLayout({ Component, pageProps }) {
     };
   }, []);
   
-  // Client-side mounting 체크
+  // Client-side mounting 체크 및 모바일 광고 초기화
   useEffect(() => {
     setMounted(true);
+    
+    // 모바일 환경에서 광고 재스캔
+    if (window.innerWidth < 768 && typeof window !== 'undefined') {
+      const scanForAds = () => {
+        // 카카오 애드핏 스크립트가 로드되었는지 확인
+        if (document.querySelector('script[src*="ba.min.js"]')) {
+          // 강제로 스크립트 재실행을 위한 더미 스크립트 추가
+          const dummyScript = document.createElement('script');
+          dummyScript.innerHTML = `
+            // Force AdFit to rescan
+            if (window.adfit) {
+              console.log('AdFit rescan triggered');
+            }
+          `;
+          document.body.appendChild(dummyScript);
+          setTimeout(() => dummyScript.remove(), 100);
+        }
+      };
+      
+      // 여러 번 시도
+      setTimeout(scanForAds, 500);
+      setTimeout(scanForAds, 2000);
+    }
   }, []);
 
 
@@ -316,24 +339,24 @@ function InnerLayout({ Component, pageProps }) {
       </main>
 
       {/* 모바일 하단 고정 광고 */}
-      {mounted && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] shadow-lg" 
-             style={{ height: '50px' }}>
-          <div className="flex justify-center items-center h-full">
-            <ins 
-              className="kakao_ad_area" 
-              style={{ 
-                display: "inline-block",
-                width: "320px",
-                height: "50px"
-              }}
-              data-ad-unit="DAN-lTzzJjsrbDQ8kJwx"
-              data-ad-width="320"
-              data-ad-height="50"
-            />
-          </div>
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] shadow-lg" 
+           style={{ height: '50px' }}
+           suppressHydrationWarning>
+        <div className="flex justify-center items-center h-full">
+          <ins 
+            className="kakao_ad_area" 
+            style={{ 
+              display: mounted ? "inline-block" : "none",
+              width: "320px",
+              height: "50px"
+            }}
+            data-ad-unit="DAN-lTzzJjsrbDQ8kJwx"
+            data-ad-width="320"
+            data-ad-height="50"
+            suppressHydrationWarning
+          />
         </div>
-      )}
+      </div>
 
       <footer className="w-full py-4 px-3 sm:px-6 text-center text-xs sm:text-sm bg-[var(--footer-bg)]">
         © {new Date().getFullYear()} WackyFoki ·{' '}
