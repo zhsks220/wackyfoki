@@ -34,6 +34,7 @@ function InnerLayout({ Component, pageProps }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const dropdownRef = useRef(null);
   const { user, logout, isLoading } = useUser();
@@ -89,6 +90,11 @@ function InnerLayout({ Component, pageProps }) {
     return () => {
       window.removeEventListener('load', loadCoupangAd);
     };
+  }, []);
+  
+  // Client-side mounting 체크
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
 
@@ -169,22 +175,26 @@ function InnerLayout({ Component, pageProps }) {
       </Head>
 
       {/* 왼쪽 카카오 애드핏 광고 */}
-      <div className="hidden lg:block fixed left-0 top-44 z-50 w-[160px] h-[600px]">
-        <ins 
-          className="kakao_ad_area" 
-          style={{ 
-            display: "inline-block",
-            width: "160px",
-            height: "600px"
-          }}
-          data-ad-unit="DAN-jGv3PEktX9ANGtVL"
-          data-ad-width="160"
-          data-ad-height="600"
-        />
-      </div>
+      {mounted && (
+        <div className="hidden lg:block fixed left-0 top-44 z-50 w-[160px] h-[600px]">
+          <ins 
+            className="kakao_ad_area" 
+            style={{ 
+              display: "inline-block",
+              width: "160px",
+              height: "600px"
+            }}
+            data-ad-unit="DAN-jGv3PEktX9ANGtVL"
+            data-ad-width="160"
+            data-ad-height="600"
+          />
+        </div>
+      )}
 
       {/* 오른쪽 쿠팡 파트너스 광고 */}
-      <div id="coupang-partners-ad" className="hidden lg:block fixed right-0 top-44 z-40 w-[160px] h-[600px]" />
+      {mounted && (
+        <div id="coupang-partners-ad" className="hidden lg:block fixed right-0 top-44 z-40 w-[160px] h-[600px]" />
+      )}
 
       <header className="w-full px-3 sm:px-6 py-3 flex flex-col gap-2 bg-[var(--background)] z-40 shadow-sm">
         <div className="flex items-center justify-between gap-3 relative">
@@ -306,22 +316,24 @@ function InnerLayout({ Component, pageProps }) {
       </main>
 
       {/* 모바일 하단 고정 광고 */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] shadow-lg" 
-           style={{ height: '50px' }}>
-        <div className="flex justify-center items-center h-full">
-          <ins 
-            className="kakao_ad_area" 
-            style={{ 
-              display: "inline-block",
-              width: "320px",
-              height: "50px"
-            }}
-            data-ad-unit="DAN-lTzzJjsrbDQ8kJwx"
-            data-ad-width="320"
-            data-ad-height="50"
-          />
+      {mounted && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] shadow-lg" 
+             style={{ height: '50px' }}>
+          <div className="flex justify-center items-center h-full">
+            <ins 
+              className="kakao_ad_area" 
+              style={{ 
+                display: "inline-block",
+                width: "320px",
+                height: "50px"
+              }}
+              data-ad-unit="DAN-lTzzJjsrbDQ8kJwx"
+              data-ad-width="320"
+              data-ad-height="50"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       <footer className="w-full py-4 px-3 sm:px-6 text-center text-xs sm:text-sm bg-[var(--footer-bg)]">
         © {new Date().getFullYear()} WackyFoki ·{' '}

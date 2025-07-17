@@ -49,6 +49,7 @@ export default function HomePage({ initialRecipes = [], error = null }) {
   const observer = useRef(null);
   const [ssrError, setSsrError] = useState(error);
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const PAGE_SIZE = 5;
 
@@ -140,6 +141,11 @@ export default function HomePage({ initialRecipes = [], error = null }) {
     if (initialRecipes.length === 0 || error) {
       fetchRecipes(true);
     }
+  }, []);
+  
+  // Client-side mounting 체크
+  useEffect(() => {
+    setMounted(true);
   }, []);
   
   // 레시피가 로드될 때마다 댓글 정보 가져오기
@@ -400,7 +406,7 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                 </div>
 
                 {/* 카카오 애드핏 광고 (4개 이후 표시 - PC만) */}
-                {idx === 3 && (
+                {idx === 3 && mounted && (
                   <div className="hidden md:block w-full max-w-[680px] mx-auto my-6">
                     <div className="flex justify-center items-center">
                       <ins 
