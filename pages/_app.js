@@ -54,16 +54,6 @@ function InnerLayout({ Component, pageProps }) {
     }
   }, [user, isLoading, router]);
 
-  // 카카오 광고 리프레시
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (window.kakaoPixel) {
-        window.kakaoPixel('114528304300437239').pageView();
-      }
-    }, 1500);
-    
-    return () => clearTimeout(timer);
-  }, [router.pathname]);
   
 
   // ✅ 쿠팡 파트너스 광고 로드
