@@ -65,38 +65,6 @@ function InnerLayout({ Component, pageProps }) {
     return () => clearTimeout(timer);
   }, [router.pathname]);
   
-  // 모바일 광고 초기화
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    // 카카오 애드핏 재로드 함수
-    const reloadAdfit = () => {
-      // 기존 스크립트 제거
-      const existingScript = document.querySelector('script[src*="ba.min.js"]');
-      if (existingScript) {
-        existingScript.remove();
-      }
-      
-      // 새 스크립트 추가
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = '//t1.daumcdn.net/kas/static/ba.min.js';
-      script.async = true;
-      
-      script.onload = () => {
-        console.log('AdFit script reloaded');
-        // 모든 광고 영역 다시 스캔
-        const adAreas = document.querySelectorAll('.kakao_ad_area');
-        console.log('Found ad areas:', adAreas.length);
-      };
-      
-      document.head.appendChild(script);
-    };
-    
-    // 페이지 로드 후 재실행
-    const timer = setTimeout(reloadAdfit, 3000);
-    return () => clearTimeout(timer);
-  }, []);
 
   // ✅ 쿠팡 파트너스 광고 로드
   useEffect(() => {
@@ -339,13 +307,13 @@ function InnerLayout({ Component, pageProps }) {
         )}
       </header>
 
-      <main className="flex-1 px-3 sm:px-6 pb-16 md:pb-0">
+      <main className="flex-1 px-3 sm:px-6 pb-14 md:pb-0">
         <Component {...pageProps} />
       </main>
 
       {/* 모바일 하단 고정 광고 */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] shadow-lg bg-gray-100 dark:bg-gray-800" 
-           style={{ height: '60px' }}>
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] shadow-lg" 
+           style={{ height: '50px' }}>
         <div className="flex justify-center items-center h-full">
           <ins 
             className="kakao_ad_area" 
@@ -358,9 +326,6 @@ function InnerLayout({ Component, pageProps }) {
             data-ad-width="320"
             data-ad-height="50"
           />
-          <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500 pointer-events-none">
-            광고 영역
-          </div>
         </div>
       </div>
 
