@@ -405,7 +405,11 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                     <div className="flex justify-center items-center">
                       <ins 
                         className="kakao_ad_area" 
-                        style={{ display: "none" }}
+                        style={{ 
+                          display: "inline-block",
+                          width: "728px",
+                          height: "90px"
+                        }}
                         data-ad-unit="DAN-s2B5ioxlTzXJhmyW"
                         data-ad-width="728"
                         data-ad-height="90"

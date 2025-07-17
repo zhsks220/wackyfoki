@@ -179,10 +179,14 @@ function InnerLayout({ Component, pageProps }) {
       </Head>
 
       {/* 왼쪽 카카오 애드핏 광고 */}
-      <div className="hidden lg:block fixed left-0 top-44 z-50 w-[160px] h-[600px] bg-gray-100">
+      <div className="hidden lg:block fixed left-0 top-44 z-50 w-[160px] h-[600px]">
         <ins 
           className="kakao_ad_area" 
-          style={{ display: "none" }}
+          style={{ 
+            display: "inline-block",
+            width: "160px",
+            height: "600px"
+          }}
           data-ad-unit="DAN-jGv3PEktX9ANGtVL"
           data-ad-width="160"
           data-ad-height="600"
