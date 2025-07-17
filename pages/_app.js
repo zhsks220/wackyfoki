@@ -64,6 +64,39 @@ function InnerLayout({ Component, pageProps }) {
     
     return () => clearTimeout(timer);
   }, [router.pathname]);
+  
+  // 모바일 광고 초기화
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    // 카카오 애드핏 재로드 함수
+    const reloadAdfit = () => {
+      // 기존 스크립트 제거
+      const existingScript = document.querySelector('script[src*="ba.min.js"]');
+      if (existingScript) {
+        existingScript.remove();
+      }
+      
+      // 새 스크립트 추가
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = '//t1.daumcdn.net/kas/static/ba.min.js';
+      script.async = true;
+      
+      script.onload = () => {
+        console.log('AdFit script reloaded');
+        // 모든 광고 영역 다시 스캔
+        const adAreas = document.querySelectorAll('.kakao_ad_area');
+        console.log('Found ad areas:', adAreas.length);
+      };
+      
+      document.head.appendChild(script);
+    };
+    
+    // 페이지 로드 후 재실행
+    const timer = setTimeout(reloadAdfit, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // ✅ 쿠팡 파트너스 광고 로드
   useEffect(() => {
@@ -316,7 +349,11 @@ function InnerLayout({ Component, pageProps }) {
         <div className="flex justify-center items-center h-full">
           <ins 
             className="kakao_ad_area" 
-            style={{ display: "none" }}
+            style={{ 
+              display: "inline-block",
+              width: "320px",
+              height: "50px"
+            }}
             data-ad-unit="DAN-lTzzJjsrbDQ8kJwx"
             data-ad-width="320"
             data-ad-height="50"
