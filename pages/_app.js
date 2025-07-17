@@ -54,6 +54,17 @@ function InnerLayout({ Component, pageProps }) {
     }
   }, [user, isLoading, router]);
 
+  // 카카오 광고 리프레시
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (window.kakaoPixel) {
+        window.kakaoPixel('114528304300437239').pageView();
+      }
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, [router.pathname]);
+
   // ✅ 쿠팡 파트너스 광고 로드
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -300,7 +311,7 @@ function InnerLayout({ Component, pageProps }) {
       </main>
 
       {/* 모바일 하단 고정 광고 */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] shadow-lg bg-white dark:bg-gray-900" 
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] shadow-lg bg-gray-100 dark:bg-gray-800" 
            style={{ height: '60px' }}>
         <div className="flex justify-center items-center h-full">
           <ins 
@@ -310,6 +321,9 @@ function InnerLayout({ Component, pageProps }) {
             data-ad-width="320"
             data-ad-height="50"
           />
+          <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500 pointer-events-none">
+            광고 영역
+          </div>
         </div>
       </div>
 
