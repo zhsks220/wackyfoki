@@ -92,32 +92,9 @@ function InnerLayout({ Component, pageProps }) {
     };
   }, []);
   
-  // Client-side mounting 체크 및 모바일 광고 초기화
+  // Client-side mounting 체크
   useEffect(() => {
     setMounted(true);
-    
-    // 모바일 환경에서 광고 재스캔
-    if (window.innerWidth < 768 && typeof window !== 'undefined') {
-      const scanForAds = () => {
-        // 카카오 애드핏 스크립트가 로드되었는지 확인
-        if (document.querySelector('script[src*="ba.min.js"]')) {
-          // 강제로 스크립트 재실행을 위한 더미 스크립트 추가
-          const dummyScript = document.createElement('script');
-          dummyScript.innerHTML = `
-            // Force AdFit to rescan
-            if (window.adfit) {
-              console.log('AdFit rescan triggered');
-            }
-          `;
-          document.body.appendChild(dummyScript);
-          setTimeout(() => dummyScript.remove(), 100);
-        }
-      };
-      
-      // 여러 번 시도
-      setTimeout(scanForAds, 500);
-      setTimeout(scanForAds, 2000);
-    }
   }, []);
 
 
@@ -198,26 +175,22 @@ function InnerLayout({ Component, pageProps }) {
       </Head>
 
       {/* 왼쪽 카카오 애드핏 광고 */}
-      {mounted && (
-        <div className="hidden lg:block fixed left-0 top-44 z-50 w-[160px] h-[600px]">
-          <ins 
-            className="kakao_ad_area" 
-            style={{ 
-              display: "inline-block",
-              width: "160px",
-              height: "600px"
-            }}
-            data-ad-unit="DAN-jGv3PEktX9ANGtVL"
-            data-ad-width="160"
-            data-ad-height="600"
-          />
-        </div>
-      )}
+      <div className="hidden lg:block fixed left-0 top-44 z-50 w-[160px] h-[600px]">
+        <ins 
+          className="kakao_ad_area" 
+          style={{ 
+            display: "inline-block",
+            width: "160px",
+            height: "600px"
+          }}
+          data-ad-unit="DAN-jGv3PEktX9ANGtVL"
+          data-ad-width="160"
+          data-ad-height="600"
+        />
+      </div>
 
       {/* 오른쪽 쿠팡 파트너스 광고 */}
-      {mounted && (
-        <div id="coupang-partners-ad" className="hidden lg:block fixed right-0 top-44 z-40 w-[160px] h-[600px]" />
-      )}
+      <div id="coupang-partners-ad" className="hidden lg:block fixed right-0 top-44 z-40 w-[160px] h-[600px]" />
 
       <header className="w-full px-3 sm:px-6 py-3 flex flex-col gap-2 bg-[var(--background)] z-40 shadow-sm">
         <div className="flex items-center justify-between gap-3 relative">

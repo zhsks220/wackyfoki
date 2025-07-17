@@ -406,7 +406,7 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                 </div>
 
                 {/* 카카오 애드핏 광고 (4개 이후 표시 - PC만) */}
-                {idx === 3 && mounted && (
+                {idx === 3 && (
                   <div className="hidden md:block w-full max-w-[680px] mx-auto my-6">
                     <div className="flex justify-center items-center">
                       <ins 
