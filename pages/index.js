@@ -483,8 +483,8 @@ export async function getStaticProps({ locale = 'ko' }) {
           initialRecipes: [],
           error: 'Firebase configuration missing'
         },
-        // ISR: 1분마다 재생성
-        revalidate: 60,
+        // ISR: 10초마다 재생성 (더 빠른 업데이트)
+        revalidate: 10,
       };
     }
 
@@ -563,8 +563,8 @@ export async function getStaticProps({ locale = 'ko' }) {
           initialRecipes: [],
           error: null // 빌드 시점 에러는 클라이언트에 노출하지 않음
         },
-        // ISR: 1분마다 재생성
-        revalidate: 60,
+        // ISR: 10초마다 재생성 (더 빠른 업데이트)
+        revalidate: 10,
       };
     }
 
