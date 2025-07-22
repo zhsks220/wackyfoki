@@ -300,7 +300,7 @@ export default function HomePage({ initialRecipes = [], error = null }) {
         {filteredRecipes.length === 0 && recipes.length > 0 && <p>{t('no_filtered_results')}</p>}
 
         {/* -------------------- 레시피 카드 리스트 ------------------- */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6" role="feed" aria-label="Recipe Feed">
           {filteredRecipes.map((recipe, idx) => {
             const top      = topComments[recipe.id];
             const cnt      = commentCounts[recipe.id] ?? 0;
@@ -311,7 +311,7 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                 <div ref={isLast ? lastRecipeRef : null}>
 
                 {/* 카드 래퍼 ---------------------------------------- */}
-                <div className="relative bg-[var(--card-bg)] text-[var(--card-text)]
+                <article className="relative bg-[var(--card-bg)] text-[var(--card-text)]
                                 rounded-xl shadow-md p-6 pt-12">
 
                   {/* ⋯ 드롭다운 ------------------------------------ */}
@@ -426,7 +426,7 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                     </div>
                   </div>
                 )}
-                </div>
+                </article>
 
                 {/* 모바일 인피드 광고 - 3개마다 표시 */}
                 {(idx + 1) % 3 === 0 && idx !== filteredRecipes.length - 1 && (
@@ -437,7 +437,7 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                       </span>
                       <div className="pt-6">
                         <GoogleAdsense 
-                          slot="YOUR_MOBILE_INFEED_SLOT" 
+                          slot="3497577017" 
                           format="auto"
                           style={{ width: '100%', minHeight: '100px' }}
                           responsive={true}

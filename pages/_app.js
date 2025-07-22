@@ -189,7 +189,7 @@ function InnerLayout({ Component, pageProps }) {
       {/* 오른쪽 구글 애드센스 광고 */}
       <div className="hidden lg:block fixed right-0 top-44 z-40 w-[160px] h-[600px]">
         <GoogleAdsense 
-          slot="YOUR_SIDE_AD_SLOT" 
+          slot="3607411740" 
           format="vertical"
           style={{ width: '160px', height: '600px' }}
         />
@@ -338,7 +338,7 @@ function InnerLayout({ Component, pageProps }) {
       <div className="hidden md:block w-full bg-[var(--background)] py-4">
         <div className="max-w-[728px] mx-auto">
           <GoogleAdsense 
-            slot="YOUR_BOTTOM_AD_SLOT" 
+            slot="7434976110" 
             format="horizontal"
             style={{ width: '100%', height: '90px' }}
           />
