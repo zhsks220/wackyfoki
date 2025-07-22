@@ -1,6 +1,6 @@
 // pages/index.js
 import Head from 'next/head';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   collection, getDocs, query, orderBy, doc, deleteDoc,
   getDoc, limit, startAfter,
@@ -13,6 +13,8 @@ import CommentDrawer from '@/components/CommentDrawer';
 import UploadModal from '@/components/UploadModal';
 import RecipeCard from '@/components/RecipeCard';
 import LikeButton from '@/components/LikeButton';
+import ShareButton from '@/components/ShareButton';
+import GoogleAdsense from '@/components/GoogleAdsense';
 
 import { HiOutlineDotsHorizontal } from 'react-icons/hi';
 import { FaRegCommentDots } from 'react-icons/fa';
@@ -293,12 +295,6 @@ export default function HomePage({ initialRecipes = [], error = null }) {
           </div>
         )}
 
-        {/* 디버깅 정보 - 프로덕션에서는 제거 필요 */}
-        {process.env.NODE_ENV === 'development' && (
-          <div style={{ background: '#f0f0f0', padding: '10px', marginBottom: '10px' }}>
-            <p>Debug: initialRecipes={initialRecipes.length}, recipes={recipes.length}, filtered={filteredRecipes.length}</p>
-          </div>
-        )}
         
         {filteredRecipes.length === 0 && recipes.length === 0 && <p>{t('no_recipe')}</p>}
         {filteredRecipes.length === 0 && recipes.length > 0 && <p>{t('no_filtered_results')}</p>}
@@ -311,7 +307,8 @@ export default function HomePage({ initialRecipes = [], error = null }) {
             const isLast   = idx === filteredRecipes.length - 1;
 
             return (
-              <div key={recipe.id} ref={isLast ? lastRecipeRef : null}>
+              <React.Fragment key={recipe.id}>
+                <div ref={isLast ? lastRecipeRef : null}>
 
                 {/* 카드 래퍼 ---------------------------------------- */}
                 <div className="relative bg-[var(--card-bg)] text-[var(--card-text)]
@@ -362,7 +359,7 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                   {/* 레시피 카드 본문 ------------------------------ */}
                   <RecipeCard recipe={recipe} />
 
-                  {/* 좋아요 · 댓글 · 상세보기 ------------------------ */}
+                  {/* 좋아요 · 댓글 · 공유 · 상세보기 ------------------------ */}
                   <div className="flex items-center gap-4 my-3">
                     <LikeButton
                       path={`recipes/${recipe.id}`}
@@ -386,6 +383,12 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                       <FaRegCommentDots className="text-xl" />
                       <span className="text-sm">{cnt}</span>
                     </button>
+
+                    {/* 공유 버튼 */}
+                    <ShareButton 
+                      recipe={recipe} 
+                      url={`${typeof window !== 'undefined' ? window.location.origin : ''}/recipe/${recipe.id}`}
+                    />
 
                     <button
                       onClick={() => router.push(`/recipe/${recipe.id}`)}
@@ -423,7 +426,27 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                     </div>
                   </div>
                 )}
-              </div>
+                </div>
+
+                {/* 모바일 인피드 광고 - 3개마다 표시 */}
+                {(idx + 1) % 3 === 0 && idx !== filteredRecipes.length - 1 && (
+                  <div className="md:hidden w-full">
+                    <div className="relative bg-gray-50 dark:bg-gray-800 rounded-xl shadow-md p-4">
+                      <span className="absolute top-2 left-2 text-xs text-gray-500 dark:text-gray-400">
+                        {t('advertisement', '광고')}
+                      </span>
+                      <div className="pt-6">
+                        <GoogleAdsense 
+                          slot="YOUR_MOBILE_INFEED_SLOT" 
+                          format="auto"
+                          style={{ width: '100%', minHeight: '100px' }}
+                          responsive={true}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </React.Fragment>
             );
           })}
         </div>
@@ -483,8 +506,8 @@ export async function getStaticProps({ locale = 'ko' }) {
           initialRecipes: [],
           error: 'Firebase configuration missing'
         },
-        // ISR: 10초마다 재생성 (더 빠른 업데이트)
-        revalidate: 10,
+        // ISR: 1분마다 재생성
+        revalidate: 60,
       };
     }
 
@@ -563,8 +586,8 @@ export async function getStaticProps({ locale = 'ko' }) {
           initialRecipes: [],
           error: null // 빌드 시점 에러는 클라이언트에 노출하지 않음
         },
-        // ISR: 10초마다 재생성 (더 빠른 업데이트)
-        revalidate: 10,
+        // ISR: 1분마다 재생성
+        revalidate: 60,
       };
     }
 

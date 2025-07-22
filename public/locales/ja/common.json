@@ -233,5 +233,23 @@
   "write_reply"   : "返信を入力してください",
   "reply"         : "返信",
   "placeholder_description": "調理手順を入力してください",
-  "hide_replies"  : "返信を隠す"
+  "hide_replies"  : "返信を隠す",
+  
+  "share": "共有",
+  "share_recipe": "レシピを共有",
+  "share_on_twitter": "Twitterで共有",
+  "share_on_facebook": "Facebookで共有",
+  "share_on_whatsapp": "WhatsAppで共有",
+  "share_on_telegram": "Telegramで共有",
+  "share_via_email": "メールで共有",
+  "copy_link": "リンクをコピー",
+  "link_copied": "リンクがクリップボードにコピーされました！",
+  "share_success": "共有に成功しました！",
+  "share_error": "共有に失敗しました。もう一度お試しください。",
+  "share_text": "WackyFokiで素晴らしいレシピをチェックしてください！",
+  "instagram_share_instruction": "リンクをコピーしてInstagramストーリーやプロフィールに共有してください",
+  "kakaotalk_share_coming_soon": "カカオトーク共有は近日中に対応予定です！",
+  "share_with_apps": "他のアプリで共有",
+  "tap_to_view_recipe": "タップしてレシピを見る",
+  "advertisement": "広告"
 }

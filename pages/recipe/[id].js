@@ -14,6 +14,7 @@ import {
 } from 'react-icons/fa';
 import LikeButton     from '@/components/LikeButton';
 import CommentDrawer  from '@/components/CommentDrawer';
+import ShareButton    from '@/components/ShareButton';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
@@ -305,7 +306,7 @@ export default function RecipeDetailPage({ initialRecipe, initialComments, local
           </div>
         )}
 
-        {/* ---------------- 좋아요 + 말풍선 ---------------- */}
+        {/* ---------------- 좋아요 + 말풍선 + 공유 ---------------- */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
           <LikeButton
             path={`recipes/${recipe.id}`}
@@ -331,6 +332,8 @@ export default function RecipeDetailPage({ initialRecipe, initialComments, local
             <FaRegCommentDots style={{ fontSize: '1.25rem' }} />
             <span style={{ fontSize: '0.9rem' }}>{commentTotal}</span>
           </button>
+
+          <ShareButton recipe={recipe} />
         </div>
 
         {/* ---------------- 댓글 미리보기 ---------------- */}

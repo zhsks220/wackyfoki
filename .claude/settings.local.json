@@ -5,7 +5,11 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "WebFetch(domain:wackyfoki.com)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm run dev:*)",
+      "Bash(rm:*)",
+      "Bash(taskkill:*)",
+      "Bash(powershell:*)"
     ],
     "deny": []
   }

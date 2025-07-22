@@ -248,8 +248,23 @@
   "write_reply"   : "请输入回复",
   "reply"         : "回复",
   "placeholder_description": "请输入烹饪步骤",
-  "hide_replies"  : "收起回复"
-
-
-
+  "hide_replies"  : "收起回复",
+  
+  "share": "分享",
+  "share_recipe": "分享食谱",
+  "share_on_twitter": "分享到 Twitter",
+  "share_on_facebook": "分享到 Facebook",
+  "share_on_whatsapp": "分享到 WhatsApp",
+  "share_on_telegram": "分享到 Telegram",
+  "share_via_email": "通过邮件分享",
+  "copy_link": "复制链接",
+  "link_copied": "链接已复制到剪贴板！",
+  "share_success": "分享成功！",
+  "share_error": "分享失败，请重试。",
+  "share_text": "在 WackyFoki 上查看这个精彩的食谱！",
+  "instagram_share_instruction": "复制链接并在 Instagram 快拍或个人简介中分享",
+  "kakaotalk_share_coming_soon": "KakaoTalk 分享功能即将推出！",
+  "share_with_apps": "通过其他应用分享",
+  "tap_to_view_recipe": "点击查看食谱",
+  "advertisement": "广告"
 }

@@ -16,6 +16,7 @@ import { CategoryProvider } from '@/contexts/CategoryContext';
 import StickySearchBar from '@/components/StickySearchBar';
 import CategoryButtons from '@/components/CategoryButtons';
 import ScrollToTop from '@/components/ScrollToTop';
+import GoogleAdsense from '@/components/GoogleAdsense';
 
 const LOCALES = [
   { code: 'ko', label: '한국어' },
@@ -55,47 +56,40 @@ function InnerLayout({ Component, pageProps }) {
     }
   }, [user, isLoading, router]);
 
+  // 카카오 광고 리프레시
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (window.kakaoPixel) {
+        window.kakaoPixel('114528304300437239').pageView();
+      }
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, [router.pathname]);
+
   
 
-  // ✅ 쿠팡 파트너스 광고 로드
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const loadCoupangAd = () => {
-      // 쿠팡 광고 컨테이너가 있는지 확인
-      const container = document.getElementById('coupang-partners-ad');
-      if (!container) return;
-      
-      // 기존 내용 초기화
-      container.innerHTML = '';
-      
-      // 쿠팡 광고 스크립트 직접 삽입
-      const iframe = document.createElement('iframe');
-      iframe.src = `https://ads-partners.coupang.com/widgets.html?id=890449&template=carousel&trackingCode=AF6458698&subId=&width=160&height=600`;
-      iframe.width = "160";
-      iframe.height = "600";
-      iframe.style.border = "0";
-      iframe.setAttribute('scrolling', 'no');
-      
-      container.appendChild(iframe);
-    };
-    
-    // 클라이언트 사이드에서만 실행
-    if (document.readyState === 'complete') {
-      loadCoupangAd();
-    } else {
-      window.addEventListener('load', loadCoupangAd);
-    }
-    
-    return () => {
-      window.removeEventListener('load', loadCoupangAd);
-    };
-  }, []);
   
   // Client-side mounting 체크
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // 카카오 애드핏 광고 로드
+  useEffect(() => {
+    if (!mounted) return;
+    
+    const loadKakaoAds = () => {
+      if (typeof window !== 'undefined' && window.adfit) {
+        window.adfit();
+      }
+    };
+    
+    // 약간의 지연 후 광고 로드
+    const timer = setTimeout(loadKakaoAds, 100);
+    
+    return () => clearTimeout(timer);
+  }, [mounted]);
 
 
   useEffect(() => {
@@ -175,22 +169,31 @@ function InnerLayout({ Component, pageProps }) {
       </Head>
 
       {/* 왼쪽 카카오 애드핏 광고 */}
-      <div className="hidden lg:block fixed left-0 top-44 z-50 w-[160px] h-[600px]">
-        <ins 
-          className="kakao_ad_area" 
-          style={{ 
-            display: "inline-block",
-            width: "160px",
-            height: "600px"
-          }}
-          data-ad-unit="DAN-jGv3PEktX9ANGtVL"
-          data-ad-width="160"
-          data-ad-height="600"
+      {mounted && (
+        <div className="hidden lg:block fixed left-0 top-44 z-50 w-[160px] h-[600px]">
+          <ins 
+            className="kakao_ad_area" 
+            style={{ 
+              display: "inline-block",
+              width: "160px",
+              height: "600px"
+            }}
+            data-ad-unit="DAN-jGv3PEktX9ANGtVL"
+            data-ad-width="160"
+            data-ad-height="600"
+            suppressHydrationWarning
+          />
+        </div>
+      )}
+
+      {/* 오른쪽 구글 애드센스 광고 */}
+      <div className="hidden lg:block fixed right-0 top-44 z-40 w-[160px] h-[600px]">
+        <GoogleAdsense 
+          slot="YOUR_SIDE_AD_SLOT" 
+          format="vertical"
+          style={{ width: '160px', height: '600px' }}
         />
       </div>
-
-      {/* 오른쪽 쿠팡 파트너스 광고 */}
-      <div id="coupang-partners-ad" className="hidden lg:block fixed right-0 top-44 z-40 w-[160px] h-[600px]" />
 
       <header className="w-full px-3 sm:px-6 py-3 flex flex-col gap-2 bg-[var(--background)] z-40 shadow-sm">
         <div className="flex items-center justify-between gap-3 relative">
@@ -327,6 +330,17 @@ function InnerLayout({ Component, pageProps }) {
             data-ad-width="320"
             data-ad-height="50"
             suppressHydrationWarning
+          />
+        </div>
+      </div>
+
+      {/* PC 하단 광고 */}
+      <div className="hidden md:block w-full bg-[var(--background)] py-4">
+        <div className="max-w-[728px] mx-auto">
+          <GoogleAdsense 
+            slot="YOUR_BOTTOM_AD_SLOT" 
+            format="horizontal"
+            style={{ width: '100%', height: '90px' }}
           />
         </div>
       </div>

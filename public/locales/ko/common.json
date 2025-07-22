@@ -256,5 +256,23 @@
   "write_reply"    : "답글을 입력하세요",
   "reply"          : "답글",      
   "placeholder_description": "조리 과정을 입력하세요",
-  "hide_replies"   : "답글 숨기기"
+  "hide_replies"   : "답글 숨기기",
+  
+  "share": "공유",
+  "share_recipe": "레시피 공유",
+  "share_on_twitter": "트위터에 공유",
+  "share_on_facebook": "페이스북에 공유",
+  "share_on_whatsapp": "왓츠앱에 공유",
+  "share_on_telegram": "텔레그램에 공유",
+  "share_via_email": "이메일로 공유",
+  "copy_link": "링크 복사",
+  "link_copied": "링크가 클립보드에 복사되었습니다!",
+  "share_success": "성공적으로 공유되었습니다!",
+  "share_error": "공유 실패. 다시 시도해 주세요.",
+  "share_text": "WackyFoki에서 놀라운 레시피를 확인해보세요!",
+  "instagram_share_instruction": "링크를 복사하여 인스타그램 스토리나 프로필에 공유하세요",
+  "kakaotalk_share_coming_soon": "카카오톡 공유는 곧 지원될 예정입니다!",
+  "share_with_apps": "다른 앱으로 공유",
+  "tap_to_view_recipe": "탭하여 레시피 보기",
+  "advertisement": "광고"
 }

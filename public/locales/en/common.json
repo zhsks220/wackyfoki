@@ -242,5 +242,23 @@
   "write_reply"   : "Write a reply",
   "reply"         : "Reply",
   "placeholder_description": "Enter the cooking steps",
-  "hide_replies"  : "Hide replies"
+  "hide_replies"  : "Hide replies",
+  
+  "share": "Share",
+  "share_recipe": "Share Recipe",
+  "share_on_twitter": "Share on Twitter",
+  "share_on_facebook": "Share on Facebook",
+  "share_on_whatsapp": "Share on WhatsApp",
+  "share_on_telegram": "Share on Telegram",
+  "share_via_email": "Share via Email",
+  "copy_link": "Copy Link",
+  "link_copied": "Link copied to clipboard!",
+  "share_success": "Shared successfully!",
+  "share_error": "Failed to share. Please try again.",
+  "share_text": "Check out this amazing recipe on WackyFoki!",
+  "instagram_share_instruction": "Copy the link and share it on Instagram Stories or in your bio",
+  "kakaotalk_share_coming_soon": "KakaoTalk sharing is coming soon!",
+  "share_with_apps": "Share with other apps",
+  "tap_to_view_recipe": "Tap to view recipe",
+  "advertisement": "Advertisement"
 }
