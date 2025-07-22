@@ -406,6 +406,7 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                       💬 <strong>{top.displayName}</strong>: {top.content}
                     </div>
                   )}
+                </article>
                 </div>
 
                 {/* 카카오 애드핏 광고 (4개 이후 표시 - PC만) */}
@@ -426,7 +427,6 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                     </div>
                   </div>
                 )}
-                </article>
 
                 {/* 모바일 인피드 광고 - 3개마다 표시 */}
                 {(idx + 1) % 3 === 0 && idx !== filteredRecipes.length - 1 && (

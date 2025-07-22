@@ -39,9 +39,7 @@ export default function Document() {
               t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
               document,'script','//t1.daumcdn.net/adfit/static/kp.js');
               window.kakaoPixel = window.kakaoPixel || function() { (window.kakaoPixel.q = window.kakaoPixel.q || []).push(arguments); };
-              if (typeof kakaoPixel !== 'undefined') {
-                kakaoPixel('114528304300437239').pageView();
-              }
+              // pageView는 나중에 호출하도록 제거
             `
           }}
         />

@@ -59,10 +59,14 @@ function InnerLayout({ Component, pageProps }) {
   // 카카오 광고 리프레시
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (window.kakaoPixel) {
-        window.kakaoPixel('114528304300437239').pageView();
+      if (typeof window !== 'undefined' && window.kakaoPixel && typeof window.kakaoPixel === 'function') {
+        try {
+          window.kakaoPixel('114528304300437239').pageView();
+        } catch (error) {
+          console.log('Kakao Pixel not ready yet');
+        }
       }
-    }, 1500);
+    }, 2000); // 시간을 좀 더 늘림
     
     return () => clearTimeout(timer);
   }, [router.pathname]);
@@ -195,7 +199,7 @@ function InnerLayout({ Component, pageProps }) {
         />
       </div>
 
-      <header className="w-full px-3 sm:px-6 py-3 flex flex-col gap-2 bg-[var(--background)] z-40 shadow-sm">
+      <header className="fixed top-0 left-0 right-0 w-full px-3 sm:px-6 py-3 flex flex-col gap-2 bg-[var(--background)] z-50 shadow-sm">
         <div className="flex items-center justify-between gap-3 relative">
           <Link href="/" className="flex items-center gap-2 shrink-0 z-10">
             <img src="/favicon.ico" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
@@ -310,7 +314,7 @@ function InnerLayout({ Component, pageProps }) {
         )}
       </header>
 
-      <main className="flex-1 px-3 sm:px-6 pb-14 md:pb-0">
+      <main className={`flex-1 px-3 sm:px-6 pb-14 md:pb-32 ${isHome ? 'pt-28 sm:pt-16 md:pt-20' : 'pt-16 md:pt-20'}`}>
         <Component {...pageProps} />
       </main>
 
@@ -335,7 +339,7 @@ function InnerLayout({ Component, pageProps }) {
       </div>
 
       {/* PC 하단 광고 */}
-      <div className="hidden md:block w-full bg-[var(--background)] py-4">
+      <div className="hidden md:block fixed bottom-0 left-0 right-0 z-[100] shadow-lg bg-[var(--background)] py-2">
         <div className="max-w-[728px] mx-auto">
           <GoogleAdsense 
             slot="7434976110" 
@@ -345,7 +349,7 @@ function InnerLayout({ Component, pageProps }) {
         </div>
       </div>
 
-      <footer className="w-full py-4 px-3 sm:px-6 text-center text-xs sm:text-sm bg-[var(--footer-bg)]">
+      <footer className="w-full py-4 px-3 sm:px-6 text-center text-xs sm:text-sm bg-[var(--footer-bg)] md:fixed md:bottom-[110px] md:left-0 md:right-0 md:z-[90]">
         © {new Date().getFullYear()} WackyFoki ·{' '}
         <Link href="/terms" className="underline ml-1">{t('terms')}</Link> ·{' '}
         <Link href="/privacy" className="underline ml-1">{t('privacy')}</Link>
