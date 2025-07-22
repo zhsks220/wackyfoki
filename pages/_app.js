@@ -220,78 +220,6 @@ function InnerLayout({ Component, pageProps }) {
               </div>
             </div>
           )}
-
-          <div className="shrink-0 relative z-10" ref={dropdownRef}>
-            <button
-              onClick={() => setDropdownOpen(p => !p)}
-              className="w-10 h-10 rounded-full overflow-hidden border bg-white"
-            >
-              <img
-                src={user?.photoURL || '/default-avatar.png'}
-                alt="profile"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = '/default-avatar.png';
-                }}
-              />
-            </button>
-
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 rounded shadow p-4 z-50 bg-[var(--header-bg)]">
-                {user && <div className="font-semibold mb-2">{user.displayName || user.email}</div>}
-                <Link href="/mypage"><div className="py-2 hover:underline cursor-pointer">📄 {t('mypage')}</div></Link>
-                <Link href="/about"><div className="py-2 hover:underline cursor-pointer">📄 {t('about')}</div></Link>
-                <Link href="/contact"><div className="py-2 hover:underline cursor-pointer">✉️ {t('contact')}</div></Link>
-
-                <div className="flex items-center justify-between py-2">
-                  <span className="flex items-center gap-2">🌗 <span>{t('dark_mode')}</span></span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" checked={darkMode} onChange={toggleDarkMode} />
-                    <div className="w-11 h-6 bg-gray-300 rounded-full peer dark:bg-gray-600 peer-checked:bg-blue-600 transition-all" />
-                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transform transition peer-checked:translate-x-5" />
-                  </label>
-                </div>
-
-                {user ? (
-                  <div onClick={handleLogout} className="py-2 text-red-500 hover:underline cursor-pointer">🚪 {t('logout')}</div>
-                ) : (
-                  <Link href="/login"><div className="py-2 text-blue-500 hover:underline cursor-pointer">🔑 {t('login')}</div></Link>
-                )}
-
-                <div className="pt-2 mt-2 border-t border-gray-300">
-                  <button onClick={() => setSettingsOpen(p => !p)} className="w-full text-left hover:underline flex items-center gap-2">
-                    ⚙️ {t('settings')}
-                  </button>
-
-                  {settingsOpen && (
-                    <div className="mt-2 ml-4 space-y-2">
-                      <Link href="/profile/edit"><div className="hover:underline cursor-pointer">✏️ {t('edit_profile')}</div></Link>
-                      <button onClick={() => setLangOpen(p => !p)} className="flex items-center gap-1 hover:underline">
-                        🌐 {t('language')}
-                      </button>
-
-                      {langOpen && (
-                        <div className="space-y-1 pl-4 pt-1">
-                          {LOCALES.map(({ code, label }) => (
-                            <button
-                              key={code}
-                              onClick={() => changeLocale(code)}
-                              className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 ${
-                                router.locale === code ? 'font-semibold text-blue-600' : ''
-                              }`}
-                            >
-                              {label} {router.locale === code && '✓'}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         {isHome && (
@@ -314,7 +242,80 @@ function InnerLayout({ Component, pageProps }) {
         )}
       </header>
 
-      <main className={`flex-1 px-3 sm:px-6 pb-14 md:pb-32 ${isHome ? 'pt-28 sm:pt-16 md:pt-20' : 'pt-16 md:pt-20'}`}>
+      {/* 고정된 프로필 아이콘 */}
+      <div className="fixed top-3 right-3 sm:top-3 sm:right-6 z-[60]" ref={dropdownRef}>
+        <button
+          onClick={() => setDropdownOpen(p => !p)}
+          className="w-10 h-10 rounded-full overflow-hidden border bg-white shadow-md"
+        >
+          <img
+            src={user?.photoURL || '/default-avatar.png'}
+            alt="profile"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = '/default-avatar.png';
+            }}
+          />
+        </button>
+
+        {dropdownOpen && (
+          <div className="absolute right-0 mt-2 w-64 rounded shadow p-4 z-50 bg-[var(--header-bg)]">
+            {user && <div className="font-semibold mb-2">{user.displayName || user.email}</div>}
+            <Link href="/mypage"><div className="py-2 hover:underline cursor-pointer">📄 {t('mypage')}</div></Link>
+            <Link href="/about"><div className="py-2 hover:underline cursor-pointer">📄 {t('about')}</div></Link>
+            <Link href="/contact"><div className="py-2 hover:underline cursor-pointer">✉️ {t('contact')}</div></Link>
+
+            <div className="flex items-center justify-between py-2">
+              <span className="flex items-center gap-2">🌗 <span>{t('dark_mode')}</span></span>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" checked={darkMode} onChange={toggleDarkMode} />
+                <div className="w-11 h-6 bg-gray-300 rounded-full peer dark:bg-gray-600 peer-checked:bg-blue-600 transition-all" />
+                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transform transition peer-checked:translate-x-5" />
+              </label>
+            </div>
+
+            {user ? (
+              <div onClick={handleLogout} className="py-2 text-red-500 hover:underline cursor-pointer">🚪 {t('logout')}</div>
+            ) : (
+              <Link href="/login"><div className="py-2 text-blue-500 hover:underline cursor-pointer">🔑 {t('login')}</div></Link>
+            )}
+
+            <div className="pt-2 mt-2 border-t border-gray-300">
+              <button onClick={() => setSettingsOpen(p => !p)} className="w-full text-left hover:underline flex items-center gap-2">
+                ⚙️ {t('settings')}
+              </button>
+
+              {settingsOpen && (
+                <div className="mt-2 ml-4 space-y-2">
+                  <Link href="/profile/edit"><div className="hover:underline cursor-pointer">✏️ {t('edit_profile')}</div></Link>
+                  <button onClick={() => setLangOpen(p => !p)} className="flex items-center gap-1 hover:underline">
+                    🌐 {t('language')}
+                  </button>
+
+                  {langOpen && (
+                    <div className="space-y-1 pl-4 pt-1">
+                      {LOCALES.map(({ code, label }) => (
+                        <button
+                          key={code}
+                          onClick={() => changeLocale(code)}
+                          className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 ${
+                            router.locale === code ? 'font-semibold text-blue-600' : ''
+                          }`}
+                        >
+                          {label} {router.locale === code && '✓'}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <main className="flex-1 px-3 sm:px-6 pb-14 md:pb-16">
         <Component {...pageProps} />
       </main>
 
@@ -339,7 +340,7 @@ function InnerLayout({ Component, pageProps }) {
       </div>
 
       {/* PC 하단 광고 */}
-      <div className="hidden md:block fixed bottom-0 left-0 right-0 z-[100] shadow-lg bg-[var(--background)] py-2">
+      <div className="hidden md:block w-full bg-[var(--background)] py-4">
         <div className="max-w-[728px] mx-auto">
           <GoogleAdsense 
             slot="7434976110" 
@@ -349,7 +350,7 @@ function InnerLayout({ Component, pageProps }) {
         </div>
       </div>
 
-      <footer className="w-full py-4 px-3 sm:px-6 text-center text-xs sm:text-sm bg-[var(--footer-bg)] md:fixed md:bottom-[110px] md:left-0 md:right-0 md:z-[90]">
+      <footer className="w-full py-4 px-3 sm:px-6 text-center text-xs sm:text-sm bg-[var(--footer-bg)] md:fixed md:bottom-0 md:left-0 md:right-0 md:z-[100]">
         © {new Date().getFullYear()} WackyFoki ·{' '}
         <Link href="/terms" className="underline ml-1">{t('terms')}</Link> ·{' '}
         <Link href="/privacy" className="underline ml-1">{t('privacy')}</Link>
