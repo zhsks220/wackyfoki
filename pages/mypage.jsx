@@ -29,6 +29,14 @@ export default function MyPage() {
   const [liked, setLiked] = useState([]);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState({
+    my: 1,
+    liked: 1,
+    comments: 1
+  });
+  const ITEMS_PER_PAGE = 10;
 
   // 🔒 로그인 체크
   useEffect(() => {
@@ -85,6 +93,21 @@ export default function MyPage() {
       const bT = b.createdAt?.seconds ?? 0;
       return sortOrder === 'new' ? bT - aT : aT - bT;
     });
+  
+  // 페이지네이션 함수
+  const paginate = (items, page) => {
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return items.slice(startIndex, endIndex);
+  };
+  
+  const getTotalPages = (items) => Math.ceil(items.length / ITEMS_PER_PAGE);
+  
+  // 탭 변경 시 페이지 리셋
+  const handleTabChange = (newTab) => {
+    setTab(newTab);
+    setCurrentPage(prev => ({ ...prev, [newTab]: 1 }));
+  };
 
   if (user === undefined || loading) {
     return <div className="p-4">{t('loading')}</div>;
@@ -128,7 +151,7 @@ export default function MyPage() {
         {['my', 'liked', 'comments'].map((key) => (
           <button
             key={key}
-            onClick={() => setTab(key)}
+            onClick={() => handleTabChange(key)}
             className={tab === key ? 'font-bold underline' : 'text-gray-500'}
           >
             {t(
@@ -154,8 +177,9 @@ export default function MyPage() {
 
       {/* My Recipes */}
       {tab === 'my' && (
-        <div className="grid gap-4">
-          {sortByTime(myRecipes).map((r) => (
+        <div>
+          <div className="grid gap-4">
+            {paginate(sortByTime(myRecipes), currentPage.my).map((r) => (
             <div key={r.id} className="border p-3 rounded shadow">
               <Link href={`/recipe/${r.id}`} className="font-semibold hover:underline">
                 {r.title}
@@ -179,16 +203,49 @@ export default function MyPage() {
               </div>
             </div>
           ))}
-          {myRecipes.length === 0 && (
-            <p className="text-gray-500">{t('no_my_feed')}</p>
+            {myRecipes.length === 0 && (
+              <p className="text-gray-500">{t('no_my_feed')}</p>
+            )}
+          </div>
+          
+          {/* 페이지네이션 */}
+          {getTotalPages(myRecipes) > 1 && (
+            <div className="flex justify-center gap-2 mt-6">
+              <button
+                onClick={() => setCurrentPage(prev => ({ ...prev, my: Math.max(1, prev.my - 1) }))}
+                disabled={currentPage.my === 1}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                ←
+              </button>
+              {[...Array(getTotalPages(myRecipes))].map((_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => setCurrentPage(prev => ({ ...prev, my: i + 1 }))}
+                  className={`px-3 py-1 border rounded ${
+                    currentPage.my === i + 1 ? 'bg-blue-500 text-white' : ''
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage(prev => ({ ...prev, my: Math.min(getTotalPages(myRecipes), prev.my + 1) }))}
+                disabled={currentPage.my === getTotalPages(myRecipes)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                →
+              </button>
+            </div>
           )}
         </div>
       )}
 
       {/* Liked Recipes */}
       {tab === 'liked' && (
-        <div className="grid gap-4">
-          {sortByTime(liked).map((r) => (
+        <div>
+          <div className="grid gap-4">
+            {paginate(sortByTime(liked), currentPage.liked).map((r) => (
             <Link key={r.id} href={`/recipe/${r.id}`} className="border p-3 rounded shadow block">
               <div className="font-semibold">{r.title}</div>
               {r.imageUrl && (
@@ -202,16 +259,49 @@ export default function MyPage() {
               )}
             </Link>
           ))}
-          {liked.length === 0 && (
-            <p className="text-gray-500">{t('no_liked_feed')}</p>
+            {liked.length === 0 && (
+              <p className="text-gray-500">{t('no_liked_feed')}</p>
+            )}
+          </div>
+          
+          {/* 페이지네이션 */}
+          {getTotalPages(liked) > 1 && (
+            <div className="flex justify-center gap-2 mt-6">
+              <button
+                onClick={() => setCurrentPage(prev => ({ ...prev, liked: Math.max(1, prev.liked - 1) }))}
+                disabled={currentPage.liked === 1}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                ←
+              </button>
+              {[...Array(getTotalPages(liked))].map((_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => setCurrentPage(prev => ({ ...prev, liked: i + 1 }))}
+                  className={`px-3 py-1 border rounded ${
+                    currentPage.liked === i + 1 ? 'bg-blue-500 text-white' : ''
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage(prev => ({ ...prev, liked: Math.min(getTotalPages(liked), prev.liked + 1) }))}
+                disabled={currentPage.liked === getTotalPages(liked)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                →
+              </button>
+            </div>
           )}
         </div>
       )}
 
       {/* Comments */}
       {tab === 'comments' && (
-        <div className="space-y-4">
-          {sortByTime(comments).map((c, i) => (
+        <div>
+          <div className="space-y-4">
+            {paginate(sortByTime(comments), currentPage.comments).map((c, i) => (
             <div key={i} className="border p-3 rounded shadow">
               <Link href={`/recipe/${c.recipeId}`} className="font-semibold hover:underline">
                 {c.recipeTitle}
@@ -219,8 +309,40 @@ export default function MyPage() {
               <p className="text-sm text-gray-600 mt-1">{c.content}</p>
             </div>
           ))}
-          {comments.length === 0 && (
-            <p className="text-gray-500">{t('no_my_comments')}</p>
+            {comments.length === 0 && (
+              <p className="text-gray-500">{t('no_my_comments')}</p>
+            )}
+          </div>
+          
+          {/* 페이지네이션 */}
+          {getTotalPages(comments) > 1 && (
+            <div className="flex justify-center gap-2 mt-6">
+              <button
+                onClick={() => setCurrentPage(prev => ({ ...prev, comments: Math.max(1, prev.comments - 1) }))}
+                disabled={currentPage.comments === 1}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                ←
+              </button>
+              {[...Array(getTotalPages(comments))].map((_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => setCurrentPage(prev => ({ ...prev, comments: i + 1 }))}
+                  className={`px-3 py-1 border rounded ${
+                    currentPage.comments === i + 1 ? 'bg-blue-500 text-white' : ''
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage(prev => ({ ...prev, comments: Math.min(getTotalPages(comments), prev.comments + 1) }))}
+                disabled={currentPage.comments === getTotalPages(comments)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                →
+              </button>
+            </div>
           )}
         </div>
       )}
