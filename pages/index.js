@@ -409,22 +409,32 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                 </article>
                 </div>
 
-                {/* 카카오 애드핏 광고 (4개마다 표시 - PC만) */}
+                {/* PC 인피드 광고 - 4개마다 표시 */}
                 {(idx + 1) % 4 === 0 && idx !== filteredRecipes.length - 1 && (
                   <div className="hidden md:block w-full max-w-[680px] mx-auto my-6">
-                    <div className="flex justify-center items-center">
-                      <ins 
-                        className="kakao_ad_area" 
-                        style={{ 
-                          display: "inline-block",
-                          width: "728px",
-                          height: "90px"
-                        }}
-                        data-ad-unit="DAN-s2B5ioxlTzXJhmyW"
-                        data-ad-width="728"
-                        data-ad-height="90"
+                    {idx === 3 ? (
+                      // 첫 번째 광고는 카카오 애드핏
+                      <div className="flex justify-center items-center">
+                        <ins 
+                          className="kakao_ad_area" 
+                          style={{ 
+                            display: "inline-block",
+                            width: "728px",
+                            height: "90px"
+                          }}
+                          data-ad-unit="DAN-s2B5ioxlTzXJhmyW"
+                          data-ad-width="728"
+                          data-ad-height="90"
+                        />
+                      </div>
+                    ) : (
+                      // 이후 광고는 구글 애드센스
+                      <GoogleAdsense 
+                        slot="7434976110" 
+                        format="horizontal"
+                        style={{ width: '100%', height: '90px' }}
                       />
-                    </div>
+                    )}
                   </div>
                 )}
 
