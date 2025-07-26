@@ -29,6 +29,15 @@ export default function MyPage() {
   const [liked, setLiked] = useState([]);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tabLoading, setTabLoading] = useState({
+    my: false,
+    liked: false,
+    comments: false
+  });
+  const [commentsPage, setCommentsPage] = useState(1);
+  const [hasMoreComments, setHasMoreComments] = useState(true);
+  const [lastCheckedRecipeIndex, setLastCheckedRecipeIndex] = useState(0);
+  const [allRecipeIds, setAllRecipeIds] = useState([]);
   
   // 페이지네이션 상태
   const [currentPage, setCurrentPage] = useState({
@@ -46,37 +55,12 @@ export default function MyPage() {
       return;
     }
 
-    const fetchAll = async () => {
+    // 사용자 정보만 먼저 로드
+    const fetchUserData = async () => {
       setLoading(true);
-
       try {
         const snap = await getDoc(doc(db, 'users', user.uid));
         if (snap.exists()) setUserData(snap.data());
-
-        const qMy = query(collection(db, 'recipes'), where('uid', '==', user.uid));
-        const mySnap = await getDocs(qMy);
-        setMyRecipes(mySnap.docs.map((d) => ({ id: d.id, ...d.data() })));
-
-        const qLiked = query(collection(db, 'recipes'), where('likedBy', 'array-contains', user.uid));
-        const likedSnap = await getDocs(qLiked);
-        setLiked(likedSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
-
-        const recipeSnap = await getDocs(collection(db, 'recipes'));
-        const list = [];
-        for (const r of recipeSnap.docs) {
-          const cSnap = await getDocs(collection(db, `recipes/${r.id}/comments`));
-          cSnap.forEach((c) => {
-            const data = c.data();
-            if (data.uid === user.uid) {
-              list.push({
-                recipeId: r.id,
-                recipeTitle: r.data().title,
-                ...data,
-              });
-            }
-          });
-        }
-        setComments(list);
       } catch (e) {
         console.error('Error fetching user data:', e);
       } finally {
@@ -84,7 +68,24 @@ export default function MyPage() {
       }
     };
 
-    fetchAll();
+    // 각 탭의 데이터를 개별적으로 로드
+    const fetchMyRecipes = async () => {
+      setTabLoading(prev => ({ ...prev, my: true }));
+      try {
+        const qMy = query(collection(db, 'recipes'), where('uid', '==', user.uid));
+        const mySnap = await getDocs(qMy);
+        setMyRecipes(mySnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      } catch (e) {
+        console.error('Error fetching my recipes:', e);
+      } finally {
+        setTabLoading(prev => ({ ...prev, my: false }));
+      }
+    };
+
+
+    // 사용자 정보와 첫 번째 탭 데이터만 로드
+    fetchUserData();
+    fetchMyRecipes();
   }, [user]);
 
   const sortByTime = (arr) =>
@@ -103,10 +104,115 @@ export default function MyPage() {
   
   const getTotalPages = (items) => Math.ceil(items.length / ITEMS_PER_PAGE);
   
-  // 탭 변경 시 페이지 리셋
-  const handleTabChange = (newTab) => {
+  // 탭 변경 시 페이지 리셋 및 데이터 로드
+  const handleTabChange = async (newTab) => {
     setTab(newTab);
     setCurrentPage(prev => ({ ...prev, [newTab]: 1 }));
+    
+    // 해당 탭의 데이터가 없으면 로드
+    if (newTab === 'liked' && liked.length === 0 && !tabLoading.liked) {
+      await fetchLikedRecipes();
+    } else if (newTab === 'comments' && comments.length === 0 && !tabLoading.comments) {
+      // 댓글 탭 초기화
+      setComments([]);
+      setCommentsPage(1);
+      setLastCheckedRecipeIndex(0);
+      setHasMoreComments(true);
+      await fetchCommentsData();
+    }
+  };
+  
+  // 댓글 데이터 로드 함수 - 페이지네이션 적용
+  const fetchCommentsData = async (page = 1, isLoadMore = false) => {
+    if (!isLoadMore) {
+      setTabLoading(prev => ({ ...prev, comments: true }));
+    }
+    
+    try {
+      // 첫 페이지일 때만 레시피 목록 가져오기
+      if (page === 1 && allRecipeIds.length === 0) {
+        const recipesSnapshot = await getDocs(collection(db, 'recipes'));
+        const recipeData = recipesSnapshot.docs.map(doc => ({
+          id: doc.id,
+          title: doc.data().title
+        }));
+        setAllRecipeIds(recipeData);
+        
+        // 댓글 가져오기
+        await loadCommentsForPage(recipeData, 0, isLoadMore);
+      } else {
+        // 이어서 로드
+        await loadCommentsForPage(allRecipeIds, lastCheckedRecipeIndex, isLoadMore);
+      }
+    } catch (e) {
+      console.error('Error fetching comments:', e);
+    } finally {
+      setTabLoading(prev => ({ ...prev, comments: false }));
+    }
+  };
+  
+  // 페이지별로 댓글 로드
+  const loadCommentsForPage = async (recipeData, startIndex, isLoadMore = false) => {
+    const RECIPES_PER_BATCH = 10; // 한 번에 확인할 레시피 수
+    const TARGET_COMMENTS = 10; // 목표 댓글 수
+    
+    let currentComments = isLoadMore ? [...comments] : [];
+    let foundComments = 0;
+    let checkedIndex = startIndex;
+    
+    // 목표 댓글 수에 도달하거나 모든 레시피를 확인할 때까지 반복
+    while (foundComments < TARGET_COMMENTS && checkedIndex < recipeData.length) {
+      const endIndex = Math.min(checkedIndex + RECIPES_PER_BATCH, recipeData.length);
+      
+      for (let i = checkedIndex; i < endIndex && foundComments < TARGET_COMMENTS; i++) {
+        const recipe = recipeData[i];
+        const commentsQuery = query(
+          collection(db, `recipes/${recipe.id}/comments`),
+          where('uid', '==', user.uid)
+        );
+        const commentsSnapshot = await getDocs(commentsQuery);
+        
+        commentsSnapshot.forEach((doc) => {
+          if (foundComments < TARGET_COMMENTS) {
+            currentComments.push({
+              recipeId: recipe.id,
+              recipeTitle: recipe.title,
+              ...doc.data(),
+            });
+            foundComments++;
+          }
+        });
+      }
+      
+      checkedIndex = endIndex;
+    }
+    
+    // 상태 업데이트
+    setComments(currentComments);
+    setLastCheckedRecipeIndex(checkedIndex);
+    setHasMoreComments(checkedIndex < recipeData.length);
+  };
+  
+  // 더 많은 댓글 로드
+  const loadMoreComments = () => {
+    if (hasMoreComments && !tabLoading.comments) {
+      setCommentsPage(prev => prev + 1);
+      fetchCommentsData(commentsPage + 1, true);
+    }
+  };
+  
+  // useEffect 내부에서 사용할 함수들 정의
+  const fetchLikedRecipes = async () => {
+    setTabLoading(prev => ({ ...prev, liked: true }));
+    try {
+      const qLiked = query(collection(db, 'recipes'), where('likedBy', 'array-contains', user.uid));
+      const likedSnap = await getDocs(qLiked);
+      setLiked(likedSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    } catch (e) {
+      console.error('Error fetching liked recipes:', e);
+    } finally {
+      setTabLoading(prev => ({ ...prev, liked: false }));
+    }
   };
 
   if (user === undefined || loading) {
@@ -178,6 +284,9 @@ export default function MyPage() {
       {/* My Recipes */}
       {tab === 'my' && (
         <div>
+          {tabLoading.my ? (
+            <div className="text-center py-8">{t('loading')}</div>
+          ) : (
           <div className="grid gap-4">
             {paginate(sortByTime(myRecipes), currentPage.my).map((r) => (
             <div key={r.id} className="border p-3 rounded shadow">
@@ -207,6 +316,7 @@ export default function MyPage() {
               <p className="text-gray-500">{t('no_my_feed')}</p>
             )}
           </div>
+          )}
           
           {/* 페이지네이션 */}
           {getTotalPages(myRecipes) > 1 && (
@@ -244,6 +354,9 @@ export default function MyPage() {
       {/* Liked Recipes */}
       {tab === 'liked' && (
         <div>
+          {tabLoading.liked ? (
+            <div className="text-center py-8">{t('loading')}</div>
+          ) : (
           <div className="grid gap-4">
             {paginate(sortByTime(liked), currentPage.liked).map((r) => (
             <Link key={r.id} href={`/recipe/${r.id}`} className="border p-3 rounded shadow block">
@@ -263,6 +376,7 @@ export default function MyPage() {
               <p className="text-gray-500">{t('no_liked_feed')}</p>
             )}
           </div>
+          )}
           
           {/* 페이지네이션 */}
           {getTotalPages(liked) > 1 && (
@@ -300,49 +414,37 @@ export default function MyPage() {
       {/* Comments */}
       {tab === 'comments' && (
         <div>
-          <div className="space-y-4">
-            {paginate(sortByTime(comments), currentPage.comments).map((c, i) => (
-            <div key={i} className="border p-3 rounded shadow">
-              <Link href={`/recipe/${c.recipeId}`} className="font-semibold hover:underline">
-                {c.recipeTitle}
-              </Link>
-              <p className="text-sm text-gray-600 mt-1">{c.content}</p>
+          {tabLoading.comments ? (
+            <div className="text-center py-8">{t('loading')}</div>
+          ) : (
+          <>
+            <div className="space-y-4">
+              {sortByTime(comments).map((c, i) => (
+              <div key={`${c.recipeId}-${i}`} className="border p-3 rounded shadow">
+                <Link href={`/recipe/${c.recipeId}`} className="font-semibold hover:underline">
+                  {c.recipeTitle}
+                </Link>
+                <p className="text-sm text-gray-600 mt-1">{c.content}</p>
+              </div>
+            ))}
+              {comments.length === 0 && !hasMoreComments && (
+                <p className="text-gray-500">{t('no_my_comments')}</p>
+              )}
             </div>
-          ))}
-            {comments.length === 0 && (
-              <p className="text-gray-500">{t('no_my_comments')}</p>
-            )}
-          </div>
-          
-          {/* 페이지네이션 */}
-          {getTotalPages(comments) > 1 && (
-            <div className="flex justify-center gap-2 mt-6">
-              <button
-                onClick={() => setCurrentPage(prev => ({ ...prev, comments: Math.max(1, prev.comments - 1) }))}
-                disabled={currentPage.comments === 1}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                ←
-              </button>
-              {[...Array(getTotalPages(comments))].map((_, i) => (
+            
+            {/* 더보기 버튼 */}
+            {hasMoreComments && (
+              <div className="flex justify-center mt-6">
                 <button
-                  key={i + 1}
-                  onClick={() => setCurrentPage(prev => ({ ...prev, comments: i + 1 }))}
-                  className={`px-3 py-1 border rounded ${
-                    currentPage.comments === i + 1 ? 'bg-blue-500 text-white' : ''
-                  }`}
+                  onClick={loadMoreComments}
+                  disabled={tabLoading.comments}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
                 >
-                  {i + 1}
+                  {tabLoading.comments ? t('loading') : t('load_more')}
                 </button>
-              ))}
-              <button
-                onClick={() => setCurrentPage(prev => ({ ...prev, comments: Math.min(getTotalPages(comments), prev.comments + 1) }))}
-                disabled={currentPage.comments === getTotalPages(comments)}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                →
-              </button>
-            </div>
+              </div>
+            )}
+          </>
           )}
         </div>
       )}
