@@ -9,7 +9,8 @@
       "Bash(npm run dev:*)",
       "Bash(rm:*)",
       "Bash(taskkill:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(npx vercel:*)"
     ],
     "deny": []
   }

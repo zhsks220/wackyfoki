@@ -36,6 +36,7 @@ export default function MyPage() {
   });
   const [commentsPage, setCommentsPage] = useState(1);
   const [hasMoreComments, setHasMoreComments] = useState(true);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [lastCheckedRecipeIndex, setLastCheckedRecipeIndex] = useState(0);
   const [allRecipeIds, setAllRecipeIds] = useState([]);
   
@@ -118,6 +119,7 @@ export default function MyPage() {
       setCommentsPage(1);
       setLastCheckedRecipeIndex(0);
       setHasMoreComments(true);
+      setCommentsLoaded(false);
       await fetchCommentsData();
     }
   };
@@ -191,6 +193,7 @@ export default function MyPage() {
     setComments(currentComments);
     setLastCheckedRecipeIndex(checkedIndex);
     setHasMoreComments(checkedIndex < recipeData.length);
+    setCommentsLoaded(true);
   };
   
   // 더 많은 댓글 로드
@@ -427,7 +430,7 @@ export default function MyPage() {
                 <p className="text-sm text-gray-600 mt-1">{c.content}</p>
               </div>
             ))}
-              {comments.length === 0 && !hasMoreComments && (
+              {comments.length === 0 && commentsLoaded && (
                 <p className="text-gray-500">{t('no_my_comments')}</p>
               )}
             </div>
