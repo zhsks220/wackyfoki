@@ -16,7 +16,8 @@ export default function Document() {
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              (adsbygoogle = window.adsbygoogle || []).push({
+              window.adsbygoogle = window.adsbygoogle || [];
+              window.adsbygoogle.push({
                 google_ad_client: "ca-pub-7735932028043375",
                 enable_page_level_ads: true
               });
