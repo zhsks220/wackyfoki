@@ -411,8 +411,9 @@ export default function HomePage({ initialRecipes = [], error = null }) {
 
                 {/* 인피드 광고 - 4개 항목마다 삽입 */}
                 {(idx + 1) % 4 === 0 && idx !== filteredRecipes.length - 1 && (
-                  <div className="bg-[var(--card-bg)] rounded-xl shadow-md p-4">
+                  <div key={`ad-${idx}`} className="bg-[var(--card-bg)] rounded-xl shadow-md p-4">
                     <GoogleAdsense 
+                      key={`infeed-${idx}`}
                       slot="9184393241"
                       format="fluid"
                       style={{ display: 'block' }}

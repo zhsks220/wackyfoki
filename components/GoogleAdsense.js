@@ -17,20 +17,18 @@ export default function GoogleAdsense({
   useEffect(() => {
     if (!mounted) return;
     
-    try {
-      if (typeof window !== 'undefined' && window.adsbygoogle) {
-        // 광고가 이미 로드되었는지 확인
-        const ads = document.getElementsByClassName('adsbygoogle');
-        const currentAd = ads[ads.length - 1];
-        
-        if (currentAd && currentAd.innerHTML === '' && currentAd.offsetWidth > 0) {
+    const timer = setTimeout(() => {
+      try {
+        if (typeof window !== 'undefined' && window.adsbygoogle) {
           (window.adsbygoogle = window.adsbygoogle || []).push({});
         }
+      } catch (error) {
+        console.error('AdSense error:', error);
       }
-    } catch (error) {
-      console.error('AdSense error:', error);
-    }
-  }, [mounted, slot]);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [mounted]);
 
   if (!mounted) {
     return <div style={{ ...style }} className={className} />;
