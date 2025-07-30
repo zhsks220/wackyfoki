@@ -5,25 +5,14 @@ export default function Document() {
   return (
     <Html lang="ko">
       <Head>
-        {/* ✅ AdSense 사이트 소유 확인 코드 */}
+        {/* ✅ AdSense 사이트 소유 확인 코드 + 자동 광고 */}
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7735932028043375"
           crossOrigin="anonymous"
+          data-ad-client="ca-pub-7735932028043375"
         ></script>
 
-        {/* ✅ AdSense 자동 광고 활성화 */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.adsbygoogle = window.adsbygoogle || [];
-              window.adsbygoogle.push({
-                google_ad_client: "ca-pub-7735932028043375",
-                enable_page_level_ads: true
-              });
-            `
-          }}
-        />
 
         {/* ✅ Google Fonts: Inter + Noto Sans KR */}
         <link

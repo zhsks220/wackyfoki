@@ -22,14 +22,14 @@ export default function GoogleAdsense({
         const ads = document.getElementsByClassName('adsbygoogle');
         const currentAd = ads[ads.length - 1];
         
-        if (currentAd && currentAd.innerHTML === '') {
+        if (currentAd && currentAd.innerHTML === '' && currentAd.offsetWidth > 0) {
           (window.adsbygoogle = window.adsbygoogle || []).push({});
         }
       }
     } catch (error) {
       console.error('AdSense error:', error);
     }
-  }, [mounted]);
+  }, [mounted, slot]);
 
   if (!mounted) {
     return <div style={{ ...style }} className={className} />;
