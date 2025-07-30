@@ -409,6 +409,17 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                 </article>
                 </div>
 
+                {/* 인피드 광고 - 4개 항목마다 삽입 */}
+                {(idx + 1) % 4 === 0 && idx !== filteredRecipes.length - 1 && (
+                  <div className="bg-[var(--card-bg)] rounded-xl shadow-md p-4">
+                    <GoogleAdsense 
+                      slot="9184393241"
+                      format="fluid"
+                      style={{ display: 'block' }}
+                      layoutKey="-6h+ed+2h-1n-4u"
+                    />
+                  </div>
+                )}
 
               </React.Fragment>
             );

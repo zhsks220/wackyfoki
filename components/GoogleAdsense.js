@@ -5,7 +5,8 @@ export default function GoogleAdsense({
   format = 'auto', 
   responsive = true,
   style = {},
-  className = ''
+  className = '',
+  layoutKey = null
 }) {
   const [mounted, setMounted] = useState(false);
 
@@ -43,6 +44,7 @@ export default function GoogleAdsense({
       data-ad-slot={slot}
       data-ad-format={format}
       data-full-width-responsive={responsive.toString()}
+      {...(layoutKey && { 'data-ad-layout-key': layoutKey })}
     />
   );
 }
