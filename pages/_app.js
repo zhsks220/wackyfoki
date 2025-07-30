@@ -56,20 +56,6 @@ function InnerLayout({ Component, pageProps }) {
     }
   }, [user, isLoading, router]);
 
-  // 카카오 광고 리프레시
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (typeof window !== 'undefined' && window.kakaoPixel && typeof window.kakaoPixel === 'function') {
-        try {
-          window.kakaoPixel('114528304300437239').pageView();
-        } catch (error) {
-          console.log('Kakao Pixel not ready yet');
-        }
-      }
-    }, 2000); // 시간을 좀 더 늘림
-    
-    return () => clearTimeout(timer);
-  }, [router.pathname]);
 
   
 
@@ -79,21 +65,6 @@ function InnerLayout({ Component, pageProps }) {
     setMounted(true);
   }, []);
 
-  // 카카오 애드핏 광고 로드
-  useEffect(() => {
-    if (!mounted) return;
-    
-    const loadKakaoAds = () => {
-      if (typeof window !== 'undefined' && window.adfit) {
-        window.adfit();
-      }
-    };
-    
-    // 약간의 지연 후 광고 로드
-    const timer = setTimeout(loadKakaoAds, 100);
-    
-    return () => clearTimeout(timer);
-  }, [mounted]);
 
 
   useEffect(() => {
@@ -172,23 +143,14 @@ function InnerLayout({ Component, pageProps }) {
         />
       </Head>
 
-      {/* 왼쪽 카카오 애드핏 광고 */}
-      {mounted && (
-        <div className="hidden lg:block fixed left-0 top-44 z-50 w-[160px] h-[600px]">
-          <ins 
-            className="kakao_ad_area" 
-            style={{ 
-              display: "inline-block",
-              width: "160px",
-              height: "600px"
-            }}
-            data-ad-unit="DAN-jGv3PEktX9ANGtVL"
-            data-ad-width="160"
-            data-ad-height="600"
-            suppressHydrationWarning
-          />
-        </div>
-      )}
+      {/* 왼쪽 구글 애드센스 광고 */}
+      <div className="hidden lg:block fixed left-0 top-44 z-50 w-[160px] h-[600px]">
+        <GoogleAdsense 
+          slot="3607411740" 
+          format="vertical"
+          style={{ width: '160px', height: '600px' }}
+        />
+      </div>
 
       {/* 오른쪽 구글 애드센스 광고 */}
       <div className="hidden lg:block fixed right-0 top-44 z-40 w-[160px] h-[600px]">
@@ -320,21 +282,14 @@ function InnerLayout({ Component, pageProps }) {
       </main>
 
       {/* 모바일 하단 고정 광고 */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] shadow-lg" 
-           style={{ height: '50px' }}
-           suppressHydrationWarning>
-        <div className="flex justify-center items-center h-full">
-          <ins 
-            className="kakao_ad_area" 
-            style={{ 
-              display: mounted ? "inline-block" : "none",
-              width: "320px",
-              height: "50px"
-            }}
-            data-ad-unit="DAN-lTzzJjsrbDQ8kJwx"
-            data-ad-width="320"
-            data-ad-height="50"
-            suppressHydrationWarning
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] shadow-lg bg-[var(--background)]" 
+           style={{ minHeight: '50px' }}>
+        <div className="flex justify-center items-center">
+          <GoogleAdsense 
+            slot="7434976110" 
+            format="horizontal"
+            style={{ width: '100%', height: '50px' }}
+            responsive={false}
           />
         </div>
       </div>
