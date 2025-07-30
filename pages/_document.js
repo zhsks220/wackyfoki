@@ -12,6 +12,18 @@ export default function Document() {
           crossOrigin="anonymous"
         ></script>
 
+        {/* ✅ AdSense 자동 광고 활성화 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (adsbygoogle = window.adsbygoogle || []).push({
+                google_ad_client: "ca-pub-7735932028043375",
+                enable_page_level_ads: true
+              });
+            `
+          }}
+        />
+
         {/* ✅ Google Fonts: Inter + Noto Sans KR */}
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+KR:wght@400;700&display=swap"
