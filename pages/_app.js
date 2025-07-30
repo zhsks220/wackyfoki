@@ -143,23 +143,6 @@ function InnerLayout({ Component, pageProps }) {
         />
       </Head>
 
-      {/* 왼쪽 구글 애드센스 광고 */}
-      <div className="hidden lg:block fixed left-0 top-44 z-50 w-[160px] h-[600px]">
-        <GoogleAdsense 
-          slot="3607411740" 
-          format="vertical"
-          style={{ width: '160px', height: '600px' }}
-        />
-      </div>
-
-      {/* 오른쪽 구글 애드센스 광고 */}
-      <div className="hidden lg:block fixed right-0 top-44 z-40 w-[160px] h-[600px]">
-        <GoogleAdsense 
-          slot="3607411740" 
-          format="vertical"
-          style={{ width: '160px', height: '600px' }}
-        />
-      </div>
 
       <header className="w-full px-3 sm:px-6 py-3 flex flex-col gap-2 bg-[var(--background)] z-40 shadow-sm">
         <div className="flex items-center justify-between gap-3 relative">

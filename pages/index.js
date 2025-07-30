@@ -438,24 +438,6 @@ export default function HomePage({ initialRecipes = [], error = null }) {
                   </div>
                 )}
 
-                {/* 모바일 인피드 광고 - 3개마다 표시 */}
-                {(idx + 1) % 3 === 0 && idx !== filteredRecipes.length - 1 && (
-                  <div className="md:hidden w-full">
-                    <div className="relative bg-gray-50 dark:bg-gray-800 rounded-xl shadow-md p-4">
-                      <span className="absolute top-2 left-2 text-xs text-gray-500 dark:text-gray-400">
-                        {t('advertisement', '광고')}
-                      </span>
-                      <div className="pt-6">
-                        <GoogleAdsense 
-                          slot="3497577017" 
-                          format="auto"
-                          style={{ width: '100%', minHeight: '100px' }}
-                          responsive={true}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
               </React.Fragment>
             );
           })}
