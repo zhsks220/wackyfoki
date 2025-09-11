@@ -28,7 +28,7 @@ export async function getServerSideProps({ res }) {
       return `<xhtml:link rel="alternate" hreflang="${locale}" href="${baseUrl}${localePath}" />`;
     }).join('\n');
 
-    const xDefaultLink = `<xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}${path}" />`;
+    const xDefaultLink = `<xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/en${path}" />`;
 
     return `
       <url>
@@ -48,7 +48,7 @@ export async function getServerSideProps({ res }) {
       return `<xhtml:link rel="alternate" hreflang="${locale}" href="${baseUrl}${localePath}" />`;
     }).join('\n');
 
-    const xDefaultLink = `<xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}${recipe.path}" />`;
+    const xDefaultLink = `<xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/en${recipe.path}" />`;
     
     // Firestore Timestamp를 ISO string으로 변환
     const lastmod = recipe.lastmod?.toDate ? 

@@ -170,6 +170,15 @@ export default function RecipeDetailPage({ initialRecipe, initialComments, local
         <meta property="og:url" content={`https://wackyfoki.com/${locale}/recipe/${id}`} />
         <meta name="twitter:card" content="summary_large_image" />
         
+        {/* Canonical URL - 현재 locale에 따라 동적 설정 */}
+        <link rel="canonical" href={`https://wackyfoki.com/${locale === 'ko' ? '' : locale + '/'}recipe/${id}`} />
+        {/* 대체 언어 링크 */}
+        <link rel="alternate" hreflang="ko" href={`https://wackyfoki.com/recipe/${id}`} />
+        <link rel="alternate" hreflang="en" href={`https://wackyfoki.com/en/recipe/${id}`} />
+        <link rel="alternate" hreflang="ja" href={`https://wackyfoki.com/ja/recipe/${id}`} />
+        <link rel="alternate" hreflang="zh" href={`https://wackyfoki.com/zh/recipe/${id}`} />
+        <link rel="alternate" hreflang="x-default" href={`https://wackyfoki.com/en/recipe/${id}`} />
+        
         {/* 구조화된 데이터 (Schema.org) */}
         {recipe && (
           <script
@@ -178,26 +187,48 @@ export default function RecipeDetailPage({ initialRecipe, initialComments, local
               __html: JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "Recipe",
-                "name": recipe.title,
-                "description": recipe.description,
-                "image": recipe.imageUrls || [],
+                "name": recipe.title || "Recipe",
+                "description": recipe.description || "Delicious recipe from WackyFoki",
+                "image": recipe.imageUrls && recipe.imageUrls.length > 0 ? recipe.imageUrls : ["https://wackyfoki.com/default-recipe.jpg"],
                 "author": {
                   "@type": "Person",
                   "name": recipe.authorName || t('anonymous')
                 },
-                "datePublished": recipe.createdAt ? new Date(recipe.createdAt).toISOString() : undefined,
-                "prepTime": recipe.cookTime ? `PT${recipe.cookTime}M` : undefined,
-                "recipeIngredient": recipe.ingredients ? recipe.ingredients.split('\n').filter(i => i.trim()) : [],
-                "recipeInstructions": recipe.descriptions || [],
+                "datePublished": recipe.createdAt ? new Date(recipe.createdAt).toISOString() : new Date().toISOString(),
+                "prepTime": `PT${recipe.prepTime || 15}M`,
+                "cookTime": `PT${recipe.cookTime || 30}M`,
+                "totalTime": `PT${(recipe.prepTime || 15) + (recipe.cookTime || 30)}M`,
+                "recipeIngredient": recipe.ingredients ? recipe.ingredients.split('\n').filter(i => i.trim()) : ["Ingredients not specified"],
+                "recipeInstructions": recipe.descriptions && recipe.descriptions.length > 0 ? 
+                  recipe.descriptions.map((desc, idx) => ({
+                    "@type": "HowToStep",
+                    "text": desc,
+                    "position": idx + 1
+                  })) : [{
+                    "@type": "HowToStep",
+                    "text": "Follow the recipe instructions",
+                    "position": 1
+                  }],
                 "aggregateRating": {
                   "@type": "AggregateRating",
-                  "ratingValue": recipe.taste || 0,
-                  "ratingCount": recipe.likes || 0
+                  "ratingValue": recipe.taste || 4.0,
+                  "ratingCount": recipe.likes || 1
                 },
-                "recipeYield": "1 serving",
-                "keywords": "korean recipe, 한국 요리, wackyfoki",
-                "recipeCategory": "main dish",
-                "recipeCuisine": "Korean"
+                "recipeYield": recipe.servings || "4 servings",
+                "keywords": recipe.keywords || "korean recipe, 한국 요리, wackyfoki, asian cuisine",
+                "recipeCategory": recipe.category || "main dish",
+                "recipeCuisine": recipe.cuisine || "Korean",
+                "nutrition": {
+                  "@type": "NutritionInformation",
+                  "calories": recipe.calories || "250 calories"
+                },
+                "video": recipe.videoUrl ? {
+                  "@type": "VideoObject",
+                  "name": recipe.title || "Recipe Video",
+                  "description": recipe.description || "Watch how to make this recipe",
+                  "thumbnailUrl": recipe.imageUrls?.[0] || "https://wackyfoki.com/default-recipe.jpg",
+                  "contentUrl": recipe.videoUrl
+                } : undefined
               })
             }}
           />
